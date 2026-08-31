@@ -1,0 +1,150 @@
+/*
+ * BAKMM-IoD - Key Management Phase (Section 4.3)
+ *
+ * Protocol equations are modeled symbolically.  The paper's formal
+ * Scyther verification section, however, presents the DE <-> ES
+ * authentication/key-establishment model (Figs. 3 and 4), not a
+ * corresponding ES <-> CS Scyther claim set.  Therefore this file
+ * checks secrecy of the key-management session key without adding
+ * unsupported authentication claims.
+ */
+
+hashfunction h;
+const xor: Function;
+const cat: Function;
+
+secret const RIDESj, TCESj, TCCSk, MSESjCSk;
+const TINESj;
+
+protocol BAKMMKeyManagement(ES, CS)
+{
+    role ES
+    {
+        fresh RS1: Nonce;
+        fresh TS1: Nonce;
+        fresh TS3: Nonce;
+
+        var RS2: Nonce;
+        var TS2: Nonce;
+        var TINnew: Nonce;
+
+        macro M1 = xor(
+            h(cat(TCESj, RS1, MSESjCSk, TS1)),
+            h(cat(RIDESj, MSESjCSk, TS1))
+        );
+
+        macro M2 = h(cat(
+            h(cat(RS1, TCESj, MSESjCSk, TS1)),
+            RIDESj,
+            MSESjCSk,
+            TS1
+        ));
+
+        macro SKESjCSk = h(cat(
+            h(cat(RS2, TCCSk, MSESjCSk, TS2)),
+            h(cat(RS1, TCESj, MSESjCSk, TS1)),
+            RIDESj,
+            MSESjCSk,
+            TS1,
+            TS2
+        ));
+
+        macro M4 = h(cat(
+            SKESjCSk,
+            RIDESj,
+            MSESjCSk,
+            TS2
+        ));
+
+        macro M6 = h(cat(SKESjCSk, TS3));
+
+        send_1(ES, CS, cat(TINESj, M1, M2, TS1));
+
+        recv_2(CS, ES,
+            xor(
+                h(cat(RS2, TCCSk, MSESjCSk, TS2)),
+                h(cat(RIDESj, MSESjCSk, TS1, TS2))
+            ),
+            M4,
+            xor(
+                TINnew,
+                h(cat(
+                    RIDESj,
+                    h(cat(RS1, TCESj, MSESjCSk, TS1)),
+                    TS2
+                ))
+            ),
+            TS2
+        );
+
+        send_3(ES, CS, cat(M6, TS3));
+
+        claim_ES1(ES, Secret, RS1);
+        claim_ES2(ES, Secret, MSESjCSk);
+        claim_ES3(ES, Secret, SKESjCSk);
+    }
+
+    role CS
+    {
+        fresh RS2: Nonce;
+        fresh TS2: Nonce;
+        fresh TINnew: Nonce;
+
+        var RS1: Nonce;
+        var TS1: Nonce;
+        var TS3: Nonce;
+
+        macro M3 = xor(
+            h(cat(RS2, TCCSk, MSESjCSk, TS2)),
+            h(cat(RIDESj, MSESjCSk, TS1, TS2))
+        );
+
+        macro SKCSkESj = h(cat(
+            h(cat(RS2, TCCSk, MSESjCSk, TS2)),
+            h(cat(RS1, TCESj, MSESjCSk, TS1)),
+            RIDESj,
+            MSESjCSk,
+            TS1,
+            TS2
+        ));
+
+        macro M4 = h(cat(
+            SKCSkESj,
+            RIDESj,
+            MSESjCSk,
+            TS2
+        ));
+
+        macro M5 = xor(
+            TINnew,
+            h(cat(
+                RIDESj,
+                h(cat(RS1, TCESj, MSESjCSk, TS1)),
+                TS2
+            ))
+        );
+
+        macro M6 = h(cat(SKCSkESj, TS3));
+
+        recv_1(ES, CS, cat(TINESj,
+            xor(
+                h(cat(TCESj, RS1, MSESjCSk, TS1)),
+                h(cat(RIDESj, MSESjCSk, TS1))
+            ),
+            h(cat(
+                h(cat(RS1, TCESj, MSESjCSk, TS1)),
+                RIDESj,
+                MSESjCSk,
+                TS1
+            )),
+            TS1
+        ));
+
+        send_2(CS, ES, cat(M3, M4, M5, TS2));
+        recv_3(ES, CS, cat(M6, TS3));
+
+        claim_CS1(CS, Secret, RS2);
+        claim_CS2(CS, Secret, MSESjCSk);
+        claim_CS3(CS, Secret, SKCSkESj);
+    }
+}

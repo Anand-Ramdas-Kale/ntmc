@@ -1,0 +1,741 @@
+\documentclass{article}
+
+\usepackage[
+  a4paper,
+  top=2cm,
+  bottom=2cm,
+  left=2.2cm,
+  right=2.2cm
+]{geometry}
+
+\usepackage{csquotes}
+\usepackage[hidelinks]{hyperref}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{soul}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{braket}
+\usepackage{colonequals}
+\usepackage{amsopn}
+\usepackage[version=4]{mhchem}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{wrapfig}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tikz} % we need to learn this one
+\usepackage{parskip} % paragraph spcaing something...
+
+% \usepackage{fontspec}
+% \setmainfont{Inter}
+% \setmainfont{Aptos}
+% \setmainfont{Noto Sans}
+\usetikzlibrary {shapes.geometric}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% tikzlibraries
+\usetikzlibrary{
+  arrows.meta,
+  automata,
+  positioning,
+  shadows,
+  mindmap,
+  backgrounds,
+  calendar,
+  calc,
+  topaths,
+  intersections,
+  graphs,
+  quotes,
+  fit
+}
+
+\title{NTMC Assignment Week 2}
+\author{Anand}
+\date{\today}
+
+% ---- shorthand macros: everything is typeset in \mathtt, matching the paper's notation ----
+\newcommand{\hf}[1]{\mathtt{h(}#1\mathtt{)}}          % hash function h(...)
+\newcommand{\vt}[2]{\mathtt{#1}_{\mathtt{#2}}}         % a subscripted mathtt variable, e.g. \vt{RID}{DE_i}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Document beigins %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Work for Week 2}
+
+Technical Analysis \& Comparison
+\begin{itemize}
+  \item Explain workflow of the proposed protocol.
+  \item Understand each phase of protocol.
+  \item Analyze protocol, message flow, and security mechanisms.
+  \item Study the implementation details and performance evaluations.
+\end{itemize}
+
+Proofs to submit:
+\begin{itemize}
+  \item Protocol flow diagram
+  \item Step-by-step explaination of protocol
+  \item Technical analysis report (2-3 pages)
+\end{itemize}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Mind Map Start %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Protocol Mindmap}`
+
+\begin{tikzpicture}
+  [
+    mindmap,
+    grow cyclic,
+    every node/.style={concept, circular drop shadow, text width=3.4cm, align=flush center},
+    root concept/.append style={
+      concept color=black,
+      fill=white, line width=1ex,
+      text=black, font=\large\scshape,
+      xshift=5cm,
+      yshift=-5cm
+    },
+    text=white,
+    RP/.style={concept color=red},
+    AK/.style={concept color=red},
+    KM/.style={concept color=red},
+    DA/.style={concept color=red},
+    BI/.style={concept color=red},
+    level 1/.append style={level distance=5.5cm,sibling angle=72,font=\scshape},
+  ]
+  % \draw[help lines] grid(10,10);
+  \node [root concept] {BAKMM-IoD Protocol}
+    child [RP] {node {Registration Phase}}
+    child [AK] {node {Authentication \& Key Establishment}}
+    child [KM] {node {Key Management}}
+    child [DA] {node {Dynamic Device Alocation}}
+    child [BI] {node {Blockchain Implementation}};
+\end{tikzpicture}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Tikz Set %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ---- colour palette (kept consistent across every diagram) ----
+\definecolor{clrRA}{HTML}{2E2E38}      % registration authority / trust anchor
+\definecolor{clrDE}{HTML}{C1440E}      % drone
+\definecolor{clrES}{HTML}{1F6F78}      % ground station server
+\definecolor{clrCS}{HTML}{5B3E8F}      % cloud server
+\definecolor{clrChain}{HTML}{16537E}   % blockchain
+\definecolor{clrSecure}{HTML}{2E8B57}  % secure channel (sea green)
+\definecolor{clrOpen}{HTML}{808080}    % open / insecure channel
+\definecolor{clrHash}{HTML}{B3282D}    % hash function h(.)
+\definecolor{clrOp}{HTML}{1461A6}      % xor / concat / comparisons
+\definecolor{clrMsg}{HTML}{8A5A00}     % message / macro labels M_i, m_i
+\definecolor{clrKey}{HTML}{6A3D9A}     % session keys
+
+\tikzset {
+  entity/.style={text=white, rounded corners, draw=black, double},
+  basic/.style={rounded corners, minimum width=2cm, align=left},
+  random/.style={fill=pink!20, draw=red},
+  fixed/.style={fill=teal!50, draw=black},
+  random fixed/.style={fill=teal!10!pink, draw=brown},
+  timestamp/.style={fill=cyan!10, draw=cyan},
+  derived/.style={fill=yellow!20!white, draw=orange},
+  actor/.style={
+      minimum width=35mm,
+      minimum height=10mm,
+      align=center,
+      font=\small\bfseries,
+      line width=0.9pt
+  },
+  % --- entity variants, colour-coded per role, using mathtt labels ---
+  entity RA/.style={entity, fill=clrRA, double=clrRA!40},
+  entity DE/.style={entity, fill=clrDE, double=clrDE!40},
+  entity ES/.style={entity, fill=clrES, double=clrES!40},
+  entity CS/.style={entity, fill=clrCS, double=clrCS!40},
+  % --- generic computation / verification panels ---
+  compute/.style={basic, draw=clrDE!70!black, fill=clrDE!6, line width=0.7pt,
+    font=\small, align=left, text width=8.6cm, drop shadow},
+  compute alt/.style={basic, draw=clrES!70!black, fill=clrES!6, line width=0.7pt,
+    font=\small, align=left, text width=12cm, drop shadow},
+  compute third/.style={basic, draw=clrCS!70!black, fill=clrCS!6, line width=0.7pt,
+    font=\small, align=left, text width=14cm, drop shadow},
+  storebox/.style={fill=black!6, draw=black!25, rounded corners, line width=0.6pt},
+  % --- channel arrows ---
+  secure edge/.style={-{Stealth[length=3mm, round]}, thick, clrSecure, line width=1pt},
+  open edge/.style={-{Stealth[length=3mm, round]}, thick, clrOpen, dashed, line width=0.9pt},
+  open edge rev/.style={{Stealth[length=3mm, round]}-, thick, clrOpen, dashed, line width=0.9pt},
+  derive edge/.style={-{Stealth[length=2.4mm, round]}, clrOp!70!black},
+  % --- small badge to mark a channel as secure/insecure ---
+  chanlabel secure/.style={font=\scriptsize\itshape, text=clrSecure},
+  chanlabel open/.style={font=\scriptsize\itshape, text=clrOpen},
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Tikz Set %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section{Protocl Flow Diagram}
+\subsection{Registration Phase}
+
+The registration is done offline, so communication is secure in this phase.
+
+\subsubsection{Registraiion Authority Secrets Setup}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Registration Authority Secrets Setup %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tikzpicture}
+  [
+    >={Stealth[round,color=black!50]},
+    every edge/.append style=dashed,
+  ]
+  % \draw [help lines] grid(17,24);
+  \path node [actor, entity RA] (RA) {\texttt{RA}} 
+    node [below right=10mm and -3mm of RA] [basic] [random] (SN) {$\mathtt{SN}_{\mathtt{RA}}$}
+    node [right=of SN]       [basic] [random] (SK) {$\mathtt{k}_{\mathtt{RA}}$}
+    node [right=of SK]       [basic] [fixed] (ID) {$\mathtt{ID}_{\mathtt{RA}}$}
+    node [below=of SK]       [basic] [derived] (RID){$\mathtt{RID}_{\mathtt{RA}} = \mathtt{h(}\mathtt{ID}_{\mathtt{RA}}\parallel\mathtt{SN}_{\mathtt{RA}}\parallel\mathtt{K}_{\mathtt{RA}}\mathtt{)}$};
+  \graph [edge quotes=near end] {
+    {(SN), (SK), (ID)} -> (RID);
+    (RA) -> [text=red,"\textit{generates}"] (SN);
+    (RA) -> [text=red,"\textit{generates}"] (SK);
+  };
+  \begin{scope} [on background layer]
+    \node [fill=black!10, fit=(SN) (SK) (ID) (RID), rounded corners] (memory) {};
+    \node [below=1mm of memory, text=black!50] {\footnotesize in Registration Authority's memroy};
+  \end{scope}
+\end{tikzpicture}
+
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Drone Registration %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Drone Registration}
+
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}
+  [
+    >={Stealth[round,color=black!50]},
+  ]
+  \path
+    node [actor, entity RA] (RA) {$\mathtt{RA}$}
+    node [actor, entity DE] [right=10.6cm of RA] (DE) {$\vt{DE}{i}$};
+
+  \path
+    node [compute] [below=8mm of RA.south west, anchor=north west, text width=10cm] (calc)
+      {
+        Choose $\vt{ID}{DE_i}$, $\vt{k}{DE_i}$, $\vt{SN}{DE_i}$ for $\vt{DE}{i}$; note $\vt{RTS}{DE_i}$ \\[2pt]
+        $\vt{RID}{DE_i} = \hf{\vt{RID}{RA}\parallel \vt{ID}{DE_i}\parallel \vt{k}{RA}\parallel \vt{k}{DE_i}\parallel \vt{SN}{DE_i}}$ \\[2pt]
+        $\vt{TC}{DE_i} = \hf{\vt{RID}{RA}\parallel \vt{ID}{DE_i}\parallel \vt{k}{RA}\parallel \vt{k}{DE_i}\parallel \vt{SN}{DE_i}\parallel \vt{RTS}{DE_i}}$ \\[2pt]
+        Generate provisional temporary identity $\vt{TID}{DE_i}$
+      };
+
+  \node [storebox, below=8mm of DE.south west, anchor=north west, text width=5.6cm, align=left, font=\small] (demem)
+    {Stores in memory: \\
+     $\{\vt{TID}{DE_i},\ \vt{RID}{DE_i},\ \vt{TC}{DE_i},\ \vt{MS}{DE_i-ES_j},\ \mathtt{h}(\cdot)\}$ \\[3pt]
+     {\scriptsize\itshape $\vt{MS}{DE_i-ES_j}$: primary secret key shared with $\vt{ES}{j}$, unique per drone}};
+
+  \path [draw, secure edge]
+    (calc.east) -- (demem.west)
+    node [midway, above, chanlabel secure] {registration bundle};
+\end{tikzpicture}
+}
+\caption{Registration of drone $\vt{DE}{i}$ by the registration authority (RSDI1--RSDI2).}
+\label{fig:drone-reg}
+\end{figure}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Ground Station Server Registration %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Ground Station Server Registration}
+
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}
+  [
+    >={Stealth[round,color=black!50]},
+  ]
+  \path
+    node [actor, entity RA] (RA) {$\mathtt{RA}$}
+    node [actor, entity ES] [right=10.6cm of RA] (ES) {$\vt{ES}{j}$};
+
+  \path
+    node [compute alt] [below=8mm of RA.south west, anchor=north west, text width=10cm] (calc)
+      {
+        Choose $\vt{k}{ES_j}$, $\vt{SN}{ES_j}$, $\vt{ID}{ES_j}$ for $\vt{ES}{j}$; note $\vt{RTS}{ES_j}$ \\[2pt]
+        $\vt{RID}{ES_j} = \hf{\vt{RID}{RA}\parallel \vt{ID}{ES_j}\parallel \vt{k}{RA}\parallel \vt{k}{ES_j}\parallel \vt{SN}{ES_j}}$ \\[2pt]
+        $\vt{TC}{ES_j} = \hf{\vt{RID}{RA}\parallel \vt{ID}{ES_j}\parallel \vt{k}{RA}\parallel \vt{k}{ES_j}\parallel \vt{SN}{ES_j}\parallel \vt{RTS}{ES_j}}$ \\[2pt]
+        Generate provisional id number $\vt{TIN}{ES_j}$ and shared secret $\vt{MS}{ES_j-CS_k}$
+      };
+
+  \node [storebox, below=8mm of ES.south west, anchor=north west, text width=6.9cm, align=left, font=\small] (esmem)
+    {Stores in secured database: \\
+     $\{(\vt{TID}{DE_i}, \vt{RID}{DE_i}) \mid i=1,\ldots,n_{DE}\}$, \\
+     $\vt{TIN}{ES_j},\ \vt{RID}{ES_j},\ \vt{TC}{ES_j}$, \\
+     $\{\vt{MS}{DE_i-ES_j} \mid i=1,\ldots,n_{DE}\}$, $\vt{MS}{ES_j-CS_k}$, $\mathtt{h}(\cdot)$ \\[3pt]
+     {\scriptsize\itshape $n_{DE}$: drones deployed under $\vt{ES}{j}$; the pairs $(\vt{TID}{DE_i}, \vt{RID}{DE_i})$ come from RA (Fig.~\ref{fig:drone-reg})}};
+
+  \path [draw, secure edge]
+    (calc.east) -- (esmem.west)
+    node [midway, above, chanlabel secure] {registration bundle};
+\end{tikzpicture}
+}
+\caption{Registration of ground station server $\vt{ES}{j}$ by the registration authority (RSES1--RSES2).}
+\label{fig:es-reg}
+\end{figure}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Cloud Server Registration %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Cloud Server Registration}
+
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}
+  [
+    >={Stealth[round,color=black!50]},
+  ]
+  \path
+    node [actor, entity RA] (RA) {$\mathtt{RA}$}
+    node [actor, entity CS] [right=10.6cm of RA] (CS) {$\vt{CS}{k}$};
+
+  \path
+    node [compute third] [below=8mm of RA.south west, anchor=north west, text width=10cm] (calc)
+      {
+        Choose $\vt{k}{CS_k}$, $\vt{SN}{CS_k}$, $\vt{ID}{CS_k}$ for $\vt{CS}{k}$; note $\vt{RTS}{CS_k}$ \\[2pt]
+        $\vt{RID}{CS_k} = \hf{\vt{RID}{RA}\parallel \vt{ID}{CS_k}\parallel \vt{k}{RA}\parallel \vt{k}{CS_k}\parallel \vt{SN}{CS_k}}$ \\[2pt]
+        $\vt{TC}{CS_k} = \hf{\vt{RID}{RA}\parallel \vt{ID}{CS_k}\parallel \vt{k}{RA}\parallel \vt{k}{CS_k}\parallel \vt{SN}{CS_k}\parallel \vt{RTS}{CS_k}}$
+      };
+
+  \node [storebox, below=8mm of CS.south west, anchor=north west, text width=6.9cm, align=left, font=\small] (csmem)
+    {Stores in secured database: \\
+     $\{(\vt{TIN}{ES_j}, \vt{RID}{ES_j}) \mid j=1,\ldots,n_{ES}\}$, \\
+     $\vt{RID}{CS_k},\ \vt{TC}{CS_k}$, \\
+     $\{\vt{MS}{ES_j-CS_k} \mid j=1,\ldots,n_{ES}\}$, $\mathtt{h}(\cdot)$ \\[3pt]
+     {\scriptsize\itshape $n_{ES}$: ground station servers deployed under $\vt{CS}{k}$}};
+
+  \path [draw, secure edge]
+    (calc.east) -- (csmem.west)
+    node [midway, above, chanlabel secure] {registration bundle};
+\end{tikzpicture}
+}
+\caption{Registration of cloud server $\vt{CS}{k}$ by the registration authority (RSCS1--RSCS2).}
+\label{fig:cs-reg}
+\end{figure}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Authentication Phase %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Authentication Phase}
+\begin{figure} [ht]
+\begin{tikzpicture}
+  [
+    >={Stealth[round,color=black!50]},
+    every edge/.append style=dashed,
+  ]
+  % actors
+  \path 
+    node [actor] [entity DE] (de) {$\mathtt{DE}_i$\\Drone}
+    node [actor] [entity ES] [right=10cm of de] (es) {$\mathtt{ES}_j$\\Ground Station};
+
+  % life lines
+  \draw[dashed, black!30] (de.south) -- ++(0,-15cm);
+  \draw[dashed, black!30] (es.south) -- ++(0,-15cm);
+
+  % de side
+  \path 
+    node [compute alt] [draw, fill=yellow!10] [font=\small] [below right=5mm and 0mm of de.south west] (c1)
+      {
+        Generate $\vt{rs}{1}$ and $\vt{T}{1}$ \\ 
+        $
+\vt{M}{1}
+=
+\hf{
+    \vt{RID}{DE_i}
+    \parallel
+    \vt{MS}{DE_i-ES_j}
+    \parallel
+    \mathtt{T_1}
+}
+\mathtt{\oplus}
+\hf{
+    \mathtt{TC}_{\mathtt{DE_i}}
+    \parallel
+    \mathtt{rs_1}
+    \parallel
+    \vt{MS}{DE_i-ES_j}
+    \parallel
+    \mathtt{T_1}
+}
+$
+
+$
+\vt{M}{2}
+=
+\hf{
+    \hf{
+        \mathtt{TC}_{\mathtt{DE_i}}
+        \parallel
+        \mathtt{rs_1}
+        \parallel
+        \vt{MS}{DE_i-ES_j}
+        \parallel
+        \mathtt{T_1}
+    }
+    \parallel
+    \vt{RID}{DE_i}
+    \parallel
+    \mathtt{T_1}
+}
+$
+      }
+    node [compute alt] [draw, fill=yellow!10] [font=\small] [below right=7.5cm and 0mm of de.south west] (c3)
+      {
+        $\left|\mathtt{T_2}-\mathtt{T_2^*}\right|\mathtt{\leq}\mathtt{\Delta T}$ \\
+        $\mathtt{Create\ }\vt{SK}{DE_i,ES_j}^{\prime}$ \\
+        $\mathtt{Check\ the\ session\ key\ using\ }\vt{M}{4}$ \\
+        $\mathtt{If\ correct,\ set\ the\ new\ temporary\ identity\ from\ }\vt{M}{5}$ \\
+        $\mathtt{Generate\ T_3}$ \\
+        $\vt{M}{6}=\hf{\vt{SK}{DE_i,ES_j}\parallel\mathtt{T_3}}$
+      }
+    ;
+ \path [draw]
+   let \p1 = (de),
+       \p2 = (c1.south),
+       \p3 = (es)
+  in
+   (\x1, \y2-1cm) edge[open edge] node[above] [font=\small] {$MSG_1=\{TID_{DE_i}, M_1, M_2, T_1\}$} (\x3, \y2-1cm);
+
+ \path [draw]
+   let \p1 = (de),
+       \p2 = (c3.south),
+       \p3 = (es)
+  in
+   (\x1, \y2-1cm) edge[open edge] node[above] [font=\small] {$MSG_3=\{M_6, T_3\}$} (\x3, \y2-1cm);
+
+   
+  % es side
+  \path 
+    node [compute third] [draw=cyan, fill=cyan!10] [font=\small] [below left=3cm and 0mm of es.south east] (c2)
+      {
+        $\left|\mathtt{T_1}-\mathtt{T_1^*}\right|\mathtt{\leq}\mathtt{\Delta T}$ \\
+$\mathtt{Create\ and\ check\ }\vt{M}{2}^{\prime}\mathtt{=}\vt{M}{2}$ \\
+$\vt{M}{3}
+=
+\hf{
+    \vt{RID}{DE_i}
+    \mathtt{\parallel}
+    \vt{MS}{DE_i-ES_j}
+    \mathtt{\parallel}
+    \mathtt{T_2}
+}
+\mathtt{\oplus}
+\hf{
+    \vt{RID}{ES_j}
+    \mathtt{\parallel}
+    \vt{TC}{ES_j}
+    \mathtt{\parallel}
+    \mathtt{rs_2}
+    \mathtt{\parallel}
+    \vt{MS}{DE_i-ES_j}
+    \mathtt{\parallel}
+    \mathtt{T_2}
+}$ \\
+$\vt{SK}{ES_j,DE_i}
+=
+\hf{
+    \hf{
+        \vt{TC}{DE_i}
+        \mathtt{\parallel}
+        \mathtt{rs_1}
+        \mathtt{\parallel}
+        \vt{MS}{DE_i-ES_j}
+        \mathtt{\parallel}
+        \mathtt{T_1}
+    }
+    \mathtt{\parallel}
+    \hf{
+        \vt{RID}{ES_j}
+        \mathtt{\parallel}
+        \vt{TC}{ES_j}
+        \mathtt{\parallel}
+        \mathtt{rs_2}
+        \mathtt{\parallel}
+        \vt{MS}{DE_i-ES_j}
+        \mathtt{\parallel}
+        \mathtt{T_2}
+    }
+    \mathtt{\parallel}
+    \mathtt{T_1}
+    \mathtt{\parallel}
+    \mathtt{T_2}
+    \mathtt{\parallel}
+    \vt{RID}{DE_i}
+    \mathtt{\parallel}
+    \vt{MS}{DE_i-ES_j}
+}$ \\
+$\vt{M}{4}
+=
+\hf{
+    \vt{SK}{ES_j,DE_i}
+    \mathtt{\parallel}
+    \mathtt{T_1}
+    \mathtt{\parallel}
+    \mathtt{T_2}
+    \mathtt{\parallel}
+    \vt{RID}{DE_i}
+}$ \\
+$\vt{M}{5}
+=
+\mathtt{TID}_{\mathtt{DE_i}}^{\mathtt{new}}
+\mathtt{\oplus}
+\hf{
+    \hf{
+        \vt{TC}{DE_i}
+        \mathtt{\parallel}
+        \mathtt{rs_1}
+        \mathtt{\parallel}
+        \vt{MS}{DE_i-ES_j}
+        \mathtt{\parallel}
+        \mathtt{T_1}
+    }
+    \mathtt{\parallel}
+    \vt{RID}{DE_i}
+    \mathtt{\parallel}
+    \mathtt{T_2}
+}$ 
+      };
+  \path 
+    node [compute third] [draw=cyan, fill=cyan!10] [font=\small] [below left=11.5cm and 0mm of es.south east] (c4)
+      {
+        $\left|\mathtt{T_3}-\mathtt{T_3^*}\right|\mathtt{\leq}\mathtt{\Delta T}$ \\
+$\mathtt{Create\ and\ check\ }\vt{M}{6}^{\prime}\mathtt{=}\vt{M}{6}$ 
+      };
+ \path [draw]
+   let \p1 = (de),
+       \p2 = (c2.south),
+       \p3 = (es)
+  in
+   (\x1, \y2-1cm) edge[open edge rev] node[above] [font=\small] {$MSG_2=\{M_3,M_4,M_5,T_2\}$} (\x3, \y2-1cm);
+\end{tikzpicture}
+\caption{Authentication and session-key establishment between the drone and ground station server.}
+\label{fig:de-es-auth}
+\end{figure}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Key Management Phase %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Key Management Phase}
+
+This procedure establishes the session key $\vt{SK}{ES_j,CS_k}$ shared between a ground station server and its cloud server, over the open channel (AKDEC1--AKDEC4).
+
+\begin{figure}[ht]
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}
+  [
+    >={Stealth[round,color=black!50]},
+  ]
+  \path
+    node [actor, entity ES] (ES) {$\vt{ES}{j}$\\Ground Station}
+    node [actor, entity CS] [right=10cm of ES] (CS) {$\vt{CS}{k}$\\Cloud Server};
+
+  % --- ES side, step 1 ---
+  \node [compute alt, below=6mm of ES.south west, anchor=north west] (c1)
+    {
+      Generate $\vt{TS}{1}$ and $\vt{RS}{1}$ \\
+      $\textcolor{clrMsg}{m_1}=\hf{\vt{RID}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}} \textcolor{clrOp}{\oplus} \hf{\vt{TC}{ES_j}\parallel \vt{RS}{1}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}}$ \\
+      $\textcolor{clrMsg}{m_2}=\hf{\hf{\vt{RS}{1}\parallel \vt{TC}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}} \parallel \vt{RID}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}}$
+    };
+
+  \path [draw]
+   let \p1=(ES), \p2=(c1.south), \p3=(CS) in
+   (\x1,\y2-1cm) edge[open edge] node[above, font=\small] {$msg_1=\{\vt{TIN}{ES_j}, m_1, m_2, \vt{TS}{1}\}$} (\x3,\y2-1cm);
+
+  % --- CS side, step 2 (anchored to the bottom of c1, offset for the msg1 arrow) ---
+  \node [compute third, anchor=north east, yshift=-1.8cm] at (CS.south east|-c1.south) (c2)
+    {
+      Check $\left|\vt{TS}{1}-\vt{TS}{1}^*\right|\textcolor{clrOp}{\le}\Delta T$; fetch $\vt{RID}{ES_j}, \vt{MS}{ES_j-CS_k}$ \\
+      recompute $\hf{\vt{RS}{1}\parallel \vt{TC}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}}$ from $m_1$; check $m_2^{'}\textcolor{clrOp}{=}m_2$ \\
+      Generate $\vt{TS}{2}$ and $\vt{RS}{2}$ \\
+      $\textcolor{clrMsg}{m_3}=\hf{\vt{RS}{2}\parallel \vt{TC}{CS_k}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{2}} \textcolor{clrOp}{\oplus} \hf{\vt{RID}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}\parallel \vt{TS}{2}}$ \\
+      $\textcolor{clrKey}{\vt{SK}{CS_k,ES_j}}=\hf{\hf{\vt{RS}{2}\parallel \vt{TC}{CS_k}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{2}} \parallel \hf{\vt{RS}{1}\parallel \vt{TC}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}} \parallel \vt{RID}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}\parallel \vt{TS}{2}}$ \\
+      $\textcolor{clrMsg}{m_4}=\hf{\vt{SK}{CS_k,ES_j}\parallel \vt{RID}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{2}}$; generate $\vt{TIN}{ES_j}^{new}$ \\
+      $\textcolor{clrMsg}{m_5}=\vt{TIN}{ES_j}^{new}\textcolor{clrOp}{\oplus} \hf{\vt{RID}{ES_j}\parallel \hf{\vt{RS}{1}\parallel \vt{TC}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}}\parallel \vt{TS}{2}}$
+    };
+
+  \path [draw]
+   let \p1=(ES), \p2=(c2.south), \p3=(CS) in
+   (\x1,\y2-1cm) edge[open edge rev] node[above, font=\small] {$msg_2=\{m_3,m_4,m_5,\vt{TS}{2}\}$} (\x3,\y2-1cm);
+
+  % --- ES side, step 3 (anchored to the bottom of c2, offset for the msg2 arrow) ---
+  \node [compute alt, anchor=north west, yshift=-1.8cm] at (ES.south west|-c2.south) (c3)
+    {
+      Check $\left|\vt{TS}{2}-\vt{TS}{2}^*\right|\textcolor{clrOp}{\le}\Delta T$ \\
+      $\hf{\vt{RS}{2}\parallel \vt{TC}{CS_k}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{2}} = m_3 \textcolor{clrOp}{\oplus} \hf{\vt{RID}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}\parallel \vt{TS}{2}}$ \\
+      $\textcolor{clrKey}{\vt{SK}{ES_j,CS_k}}=\hf{\hf{\vt{RS}{2}\parallel \vt{TC}{CS_k}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{2}} \parallel \hf{\vt{RS}{1}\parallel \vt{TC}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}} \parallel \vt{RID}{ES_j}\parallel \vt{MS}{ES_j-CS_k}\parallel \vt{TS}{1}\parallel \vt{TS}{2}}$ \\
+      check $m_4^{'}\textcolor{clrOp}{=}m_4$; recover $\vt{TIN}{CS_k}^{new}$ from $m_5$; update $\vt{TIN}{ES_j}$ \\
+      generate $\vt{TS}{3}$, $\textcolor{clrMsg}{m_6}=\hf{\vt{SK}{ES_j,CS_k}\parallel \vt{TS}{3}}$
+    };
+
+  \path [draw]
+   let \p1=(ES), \p2=(c3.south), \p3=(CS) in
+   (\x1,\y2-1cm) edge[open edge] node[above, font=\small] {$msg_3=\{m_6, \vt{TS}{3}\}$} (\x3,\y2-1cm);
+
+  % --- CS side, step 4 (anchored to the bottom of c3, offset for the msg3 arrow) ---
+  \node [compute third, anchor=north east, yshift=-1.8cm] at (CS.south east|-c3.south) (c4)
+    {
+      Check $\left|\vt{TS}{3}-\vt{TS}{3}^*\right|\textcolor{clrOp}{\le}\Delta T$ \\
+      Check $m_6^{'}\textcolor{clrOp}{=}m_6$; if OK, $\vt{SK}{ES_j,CS_k}$ is confirmed correct
+    };
+
+  \coordinate (midbottom) at ($(ES.south east)!0.5!(CS.south west)$);
+  \node [storebox, text width=11cm, font=\small, align=center, anchor=north]
+    at ($(midbottom |- c4.south) + (0,-8mm)$)
+    {both parties now hold the shared session key \\
+    $\vt{SK}{ES_j,CS_k}\ (=\vt{SK}{CS_k,ES_j})$};
+
+  \begin{scope}[on background layer]
+    \draw[dashed, black!30] (ES.south) -- (ES.south|-c4.south);
+    \draw[dashed, black!30] (CS.south) -- (CS.south|-c4.south);
+  \end{scope}
+
+\end{tikzpicture}
+}
+\caption{Key management between the ground station server and the cloud server.}
+\label{fig:es-cs-keymgmt}
+\end{figure}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Dynamic Device Addition Phase %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Dynamic Device Addition Phase}
+
+New drones can be inducted into an already-deployed network without repeating the entire setup. As in registration, this bootstrapping is performed by the trusted RA and is transferred over a secure (offline) channel (DDA1--DDA2).
+
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}
+  [
+    >={Stealth[round,color=black!50]},
+  ]
+  \node [actor, entity RA] (RA) {$\mathtt{RA}$};
+
+  \node [compute, below=10mm of RA, text width=11.4cm, align=left] (calc)
+    {
+      Choose $\vt{ID}{DE_i}^{\nu}$, $\vt{k}{DE_i}^{\nu}$, $\vt{SN}{DE_i}^{\nu}$ for the new drone $\vt{DE}{i}^{\nu}$ \\[2pt]
+      $\vt{RID}{DE_i}^{\nu} = \hf{\vt{RID}{RA}\parallel \vt{ID}{DE_i}^{\nu}\parallel \vt{k}{RA}\parallel \vt{k}{DE_i}^{\nu}\parallel \vt{SN}{DE_i}^{\nu}}$ \\[2pt]
+      $\vt{TC}{DE_i}^{\nu} = \hf{\vt{RID}{RA}\parallel \vt{ID}{DE_i}^{\nu}\parallel \vt{k}{RA}\parallel \vt{k}{DE_i}^{\nu}\parallel \vt{SN}{DE_i}^{\nu}\parallel \vt{RTS}{DE_i}^{\nu}}$ \\[2pt]
+      Generate temporary identity $\vt{TID}{DE_i}^{\nu}$
+    };
+
+  \node [actor, entity DE, below left=22mm and 16mm of calc.south] (DE) {$\vt{DE}{i}^{\nu}$};
+  \node [actor, entity ES, below right=22mm and 16mm of calc.south] (ES) {$\vt{ES}{j}$};
+
+  \node [storebox, below=6mm of DE, text width=5.6cm, align=left, font=\small] (demem)
+    {Stores $\{\vt{TID}{DE_i}^{\nu},\ \vt{RID}{DE_i}^{\nu},\ \vt{TC}{DE_i}^{\nu},\ \vt{MS}{DE_i-ES_j}^{\nu},\ \mathtt{h}(\cdot)\}$ in its memory};
+
+  \node [storebox, below=6mm of ES, text width=5.6cm, align=left, font=\small] (esmem2)
+    {Updates its database with the registration info of $\vt{DE}{i}^{\nu}$};
+
+  \path [draw, secure edge] (calc.south) -- +(0, -1cm) -| node [near start, above, chanlabel secure] {stores credentials} (DE.north);
+  \path [draw, secure edge] (calc.south) -- +(0, -1cm) -| node [near start, above, chanlabel secure] {shares info} (ES.north);
+  \path [draw, secure edge] (DE) -- (demem);
+  \path [draw, secure edge] (ES) -- (esmem2);
+\end{tikzpicture}
+}
+\caption{Dynamic addition of a new drone $\vt{DE}{i}^{\nu}$ to the network (DDA1--DDA2).}
+\label{fig:dda}
+\end{figure}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Blockchain Implementation Phase %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Blockchain Implementation Phase}
+
+Once session keys have been established, drone data is relayed to the ground station server, packaged into a partial block, forwarded to the cloud server, assembled into a full block and finally committed to the consortium blockchain via consensus (BIP1--BIP3).
+
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}
+  [
+    >={Stealth[round,color=black!50]},
+  ]
+  \path
+    node [actor, entity DE] (DE) {$\vt{DE}{i}$}
+    node [actor, entity ES] [right=5cm of DE] (ES) {$\vt{ES}{j}$}
+    node [actor, entity CS] [right=5cm of ES] (CS) {$\vt{CS}{l}$};
+
+  \path [draw, secure edge] (DE) -- node [midway, above, font=\scriptsize]
+    {$\vt{Inf}{DE_i}$ via $\vt{SK}{DE_i,ES_j}$} (ES);
+  \path [draw, secure edge] (ES) -- node [midway, above, font=\scriptsize]
+    {$\vt{PBK}{ES_j}$ via $\vt{SK}{ES_j,CS_k}$} (CS);
+
+  \node [compute alt, below=9mm of ES, xshift=-1.3cm, anchor=north, text width=8.3cm, align=left] (pbk)
+    {
+      \textbf{BIP1 --- partial block at $\vt{ES}{j}$:} \\
+      Generate ECC key pair $\{\vt{KU}{ES_j}, \vt{KS}{ES_j}\}$; split $\vt{Inf}{DE_i}$ into $tr_x=\{tr_1,\ldots,tr_x\}$ \\
+      $\vt{TR}{x} = E_{\vt{KU}{ES_j}}(tr_x)$ (ECC encryption) \\
+      $\vt{PBK}{ES_j} = \{\vt{OWI}{ES_j},\ \vt{KU}{ES_j},\ \vt{TR}{x},\ \vt{MT}{root_{ES_j}}\}$
+    };
+
+  \node [compute third, below left=5cm and 0mm of CS.south east, anchor=north east, text width=8.6cm, align=left] (fbk)
+    {
+      \textbf{BIP2 --- full block at $\vt{CS}{l}$:} \\
+      $\vt{FBK}{CS_l} = \{\vt{BID}{FBK_{CS_l}},\ \vt{RN}{FBK_{CS_l}},\ \vt{TSV}{FBK_{CS_l}},\ \vt{Hash}{FBK_{CS_l}},$ \\
+      \hfill $\vt{Hash}{FBK_{CS_{l-1}}},\ \vt{OWI}{ES_j},\ \vt{KU}{ES_j},\ \vt{TR}{x},\ \vt{MT}{root_{ES_j}},\ \vt{Sign}{FBK_{CS_l}}\}$
+    };
+
+  \path [draw, derive edge] (pbk.south) -- (fbk.north);
+
+  % blockchain visualisation: a small chain of committed blocks
+  \node [entity CS, minimum width=27mm, minimum height=11mm, font=\scriptsize,
+         below=3cm of fbk, xshift=-2.6cm] (blk1) {$\vt{FBK}{CS_{l-2}}$};
+  \node [entity CS, minimum width=27mm, minimum height=11mm, font=\scriptsize,
+         right=13mm of blk1] (blk2) {$\vt{FBK}{CS_{l-1}}$};
+  \node [entity CS, minimum width=27mm, minimum height=11mm, font=\scriptsize,
+         right=13mm of blk2] (blk3) {$\vt{FBK}{CS_l}$};
+
+  \draw [-{Stealth[length=2.5mm, round]}, clrChain, thick] (blk1) -- node [above, font=\scriptsize] {hash link} (blk2);
+  \draw [-{Stealth[length=2.5mm, round]}, clrChain, thick] (blk2) -- node [above, font=\scriptsize] {hash link} (blk3);
+  \draw [-{Stealth[length=2.5mm, round]}, clrChain, thick, dashed] (fbk.south) to[out=270,in=90] (blk3.north);
+
+  \begin{scope}[on background layer]
+    \node [storebox, fill=clrChain!8, draw=clrChain!60, fit=(blk1)(blk2)(blk3), inner sep=4mm,
+           label={[font=\small\bfseries, text=clrChain]above:consortium blockchain $\vt{BCH}{IoD_i}$}] {};
+  \end{scope}
+
+  \node [below=4mm of blk3, text width=7.2cm, align=center, font=\scriptsize, text=black!55]
+    {\textbf{BIP3:} leader $\vt{CS}{l}^{\prime\prime}$ runs pBFT consensus over $\vt{FBK}{CS_l}$; on success it is committed to $\vt{BCH}{IoD_i}$};
+\end{tikzpicture}
+}
+\caption{Blockchain implementation phase: from drone data to a committed block (BIP1--BIP3).}
+\label{fig:blockchain}
+\end{figure}
+
+
+\newpage
+\input{bakmm_technical_analysis}
+
+\newpage
+\input{scyther_environment}
+
+\end{document}

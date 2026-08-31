@@ -1,0 +1,191 @@
+/*
+ * BAKMM-IoD
+ * Authentication and Key Establishment Phase (Section 4.2)
+ *
+ * This model follows the SPDL snippets shown in Fig. 3 and Fig. 4
+ * of the paper.  In particular, cat() is used for concatenation and
+ * the XOR operands are kept in the same order at both endpoints.
+ */
+
+hashfunction h;
+const xor: Function;
+const cat: Function;
+
+protocol EIOT(DE, ES)
+{
+    role DE
+    {
+        fresh rs1: Nonce;
+
+        const TIDDEi, TIDnewDEi, RIDDEi, RIDESj,
+              TCDEi, TCESj, MSDEiESj,
+              T1, T2, T3, rs2;
+
+        var rs2: Nonce;
+
+        macro M1 =
+            xor(
+                h(cat(RIDDEi, MSDEiESj, T1)),
+                h(cat(TCDEi, rs1, MSDEiESj, T1))
+            );
+
+        macro M2 =
+            h(
+                cat(
+                    h(cat(TCDEi, rs1, MSDEiESj, T1)),
+                    RIDDEi,
+                    T1
+                )
+            );
+
+        macro SKDEiESj =
+            h(
+                cat(
+                    h(cat(TCDEi, rs1, MSDEiESj, T1)),
+                    h(cat(RIDESj, TCESj, rs2, MSDEiESj, T2)),
+                    T1,
+                    T2,
+                    RIDDEi,
+                    MSDEiESj
+                )
+            );
+
+        macro M4 =
+            h(cat(SKDEiESj, T1, T2, RIDDEi));
+
+        macro M6 =
+            h(cat(SKDEiESj, T3));
+
+        send_1(DE, ES, cat(TIDDEi, M1, M2, T1));
+
+        recv_2(
+            ES,
+            DE,
+            cat(
+                xor(
+                    h(cat(RIDDEi, MSDEiESj, T2)),
+                    h(cat(RIDESj, TCESj, rs2, MSDEiESj, T2))
+                ),
+                h(
+                    cat(
+                        h(
+                            cat(
+                                h(cat(TCDEi, rs1, MSDEiESj, T1)),
+                                h(cat(RIDESj, TCESj, rs2, MSDEiESj, T2)),
+                                T1,
+                                T2,
+                                RIDDEi,
+                                MSDEiESj
+                            )
+                        ),
+                        T1,
+                        T2,
+                        RIDDEi
+                    )
+                ),
+                xor(
+                    TIDnewDEi,
+                    h(
+                        cat(
+                            h(cat(TCDEi, rs1, MSDEiESj, T1)),
+                            RIDDEi,
+                            T2
+                        )
+                    )
+                ),
+                T2
+            )
+        );
+
+        send_3(DE, ES, cat(M6, T3));
+
+        claim_DE1(DE, Secret, rs1);
+        claim_DE2(DE, Secret, TCDEi);
+        claim_DE3(DE, Secret, MSDEiESj);
+        claim_DE4(DE, Niagree);
+        claim_DE5(DE, Nisynch);
+        claim_DE6(DE, Secret, SKDEiESj);
+        claim_DE7(DE, Weakagree);
+        claim_DE8(DE, Alive);
+    }
+
+    role ES
+    {
+        fresh rs2: Nonce;
+
+        const TIDDEi, TIDnewDEi, RIDDEi, RIDESj,
+              TCDEi, TCESj, MSDEiESj,
+              T1, T2, T3, rs1;
+
+        var rs1: Nonce;
+
+        macro M3 =
+            xor(
+                h(cat(RIDDEi, MSDEiESj, T2)),
+                h(cat(RIDESj, TCESj, rs2, MSDEiESj, T2))
+            );
+
+        macro SKESjDEi =
+            h(
+                cat(
+                    h(cat(TCDEi, rs1, MSDEiESj, T1)),
+                    h(cat(RIDESj, TCESj, rs2, MSDEiESj, T2)),
+                    T1,
+                    T2,
+                    RIDDEi,
+                    MSDEiESj
+                )
+            );
+
+        macro M4 =
+            h(cat(SKESjDEi, T1, T2, RIDDEi));
+
+        macro M5 =
+            xor(
+                TIDnewDEi,
+                h(
+                    cat(
+                        h(cat(TCDEi, rs1, MSDEiESj, T1)),
+                        RIDDEi,
+                        T2
+                    )
+                )
+            );
+
+        macro M6 =
+            h(cat(SKESjDEi, T3));
+
+        recv_1(
+            DE,
+            ES,
+            cat(
+                TIDDEi,
+                xor(
+                    h(cat(RIDDEi, MSDEiESj, T1)),
+                    h(cat(TCDEi, rs1, MSDEiESj, T1))
+                ),
+                h(
+                    cat(
+                        h(cat(TCDEi, rs1, MSDEiESj, T1)),
+                        RIDDEi,
+                        T1
+                    )
+                ),
+                T1
+            )
+        );
+
+        send_2(ES, DE, cat(M3, M4, M5, T2));
+
+        recv_3(DE, ES, cat(M6, T3));
+
+        claim_ES1(ES, Secret, rs2);
+        claim_ES2(ES, Secret, TCESj);
+        claim_ES3(ES, Secret, MSDEiESj);
+        claim_ES4(ES, Niagree);
+        claim_ES5(ES, Nisynch);
+        claim_ES6(ES, Secret, SKESjDEi);
+        claim_ES7(ES, Weakagree);
+        claim_ES8(ES, Alive);
+    }
+}

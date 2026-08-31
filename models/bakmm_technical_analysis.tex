@@ -1,0 +1,348 @@
+% Requires only: \usepackage{booktabs}
+% All protocol identifiers are typeset using \texttt{} as requested.
+
+\subsection{Technical Analysis of the BAKMM-IoD Protocol}
+\label{subsec:technical-analysis-bakmm}
+
+The BAKMM-IoD protocol consists of five major stages: registration, authentication
+and key establishment, key management, dynamic device addition, and blockchain
+formation. The registration and dynamic-device stages are trusted provisioning
+operations, whereas the authentication and key-management stages are open-channel
+cryptographic exchanges that can be represented directly in SPDL and verified using
+Scyther. The paper explicitly describes the authentication phase as a three-message
+exchange and the key-management phase as another three-message exchange. The
+Scyther implementation uses \texttt{send}, \texttt{recv}, and the security claims
+\texttt{Secret}, \texttt{Alive}, \texttt{Weakagree}, \texttt{Niagree}, and
+\texttt{Nisynch}. The corrected SPDL models additionally represent the equality
+checks in the protocol by using the expected cryptographic expressions directly as
+receive patterns. This is important because an unconstrained declaration such as
+\texttt{var m4} followed by \texttt{recv(...,m4,...)} does not model the protocol's
+actual check \texttt{m4'}=\texttt{m4}.
+
+\subsubsection{Registration and Credential Provisioning}
+
+During registration, the trusted registration authority \texttt{RA} generates the
+long-term credentials and derives pseudo-identities and temporal credentials. For a
+drone \texttt{DEi}, the principal values are \texttt{RIDDEi} and \texttt{TCDEi};
+for a ground station server \texttt{ESj}, they are \texttt{RIDESj} and
+\texttt{TCESj}; and for a cloud server \texttt{CSk}, they are \texttt{RIDCSk} and
+\texttt{TCCSk}. Each pseudo-identity requires one hash operation and each temporal
+credential requires one additional hash operation. The common value
+\texttt{RIDRA} is computed once as one hash operation. Consequently, the complete
+registration of one \texttt{DEi}, one \texttt{ESj}, and one \texttt{CSk} requires
+seven hash evaluations when \texttt{RIDRA} is included once:
+three for \texttt{DEi}, two for \texttt{ESj}, and two for \texttt{CSk}.
+
+Registration is not treated as an open-channel transaction in the SPDL model,
+because the paper describes it as trusted provisioning and secure storage rather
+than as an adversarial message exchange. Therefore its communication length is
+not assigned a fabricated bit count. The corresponding SPDL file
+\texttt{01\_registration.spdl} models the credential derivation computations only.
+
+\begin{table}[ht]
+\centering
+\caption{Registration computation cost.}
+\label{tab:bakmm-registration-cost}
+\begin{tabular}{llll}
+\toprule
+Entity & Operation & Hash evaluations & Average server time \\
+\midrule
+\texttt{RA} & \texttt{RIDRA} & 1 & 0.055 ms \\
+\texttt{DEi} provisioning & \texttt{RIDDEi}, \texttt{TCDEi} & 2 & 0.110 ms \\
+\texttt{ESj} provisioning & \texttt{RIDESj}, \texttt{TCESj} & 2 & 0.110 ms \\
+\texttt{CSk} provisioning & \texttt{RIDCSk}, \texttt{TCCSk} & 2 & 0.110 ms \\
+\midrule
+Total & & 7 & 0.385 ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The timing in Table~\ref{tab:bakmm-registration-cost} uses the average one-way
+hash execution time \texttt{Th}=0.055 ms measured under the server platform
+reported in the paper. The corresponding Raspberry Pi 3 average is
+\texttt{Th}=0.309 ms.
+
+\subsubsection{Authentication and Key Establishment}
+
+The authentication phase establishes a common session key between \texttt{DEi} and
+\texttt{ESj}. The three exchanged messages are
+
+\begin{align}
+\texttt{MSG1} &= \{\texttt{TIDDEi},\texttt{M1},\texttt{M2},\texttt{T1}\},\\
+\texttt{MSG2} &= \{\texttt{M3},\texttt{M4},\texttt{M5},\texttt{T2}\},\\
+\texttt{MSG3} &= \{\texttt{M6},\texttt{T3}\}.
+\end{align}
+
+The protocol uses fresh values \texttt{rs1}, \texttt{rs2}, \texttt{T1},
+\texttt{T2}, and \texttt{T3}. The first message authenticates the drone through
+\texttt{M2}. The second message provides the server contribution \texttt{rs2},
+the session-key confirmation value \texttt{M4}, and the updated temporary
+identity protected by \texttt{M5}. Finally, \texttt{M6} confirms to the ground
+station server that the drone derived the same session key.
+
+The session key is
+
+\begin{equation}
+\texttt{SKDEiESj} =
+\texttt{h(h(TCDEi,rs1,MSDEiESj,T1),
+h(RIDESj,TCESj,rs2,MSDEiESj,T2),
+T1,T2,RIDDEi,MSDEiESj)}.
+\end{equation}
+
+For the communication-cost calculation, the paper assumes an identity and a
+random number occupy 160 bits, an ECC point occupies 320 bits, a SHA-256 hash
+occupies 256 bits, and a timestamp occupies 32 bits. Hence,
+
+\begin{align}
+L_{\texttt{MSG1}}
+ &=160+256+256+32
+ =704~\text{bits},\\
+L_{\texttt{MSG2}}
+ &=256+256+160+32
+ =704~\text{bits},\\
+L_{\texttt{MSG3}}
+ &=256+32
+ =288~\text{bits}.
+\end{align}
+
+Thus, direct calculation from the field sizes stated in the paper gives
+
+\begin{equation}
+L_{\mathrm{auth}}=704+704+288=1696~\text{bits}.
+\end{equation}
+
+The paper's comparative communication table reports a total of 1792 bits for
+BAKMM-IoD. Therefore, there is a 96-bit discrepancy between the published total
+and the direct calculation from the published field-size assumptions. The
+reported value should not be silently substituted into the individual message
+lengths; both values should be documented when reproducing the paper's analysis.
+
+\begin{table}[ht]
+\centering
+\caption{Authentication message size and computation cost.}
+\label{tab:bakmm-auth-cost}
+\begin{tabular}{llllll}
+\toprule
+Message & Direction & Length & Sender hashes & Receiver hashes &
+Purpose \\
+\midrule
+\texttt{MSG1} & \texttt{DEi}\rightarrow\texttt{ESj}
+& 704 bits & 4 & 2 & Drone authentication \\
+\texttt{MSG2} & \texttt{ESj}\rightarrow\texttt{DEi}
+& 704 bits & 8 & 8 & Key establishment and server authentication \\
+\texttt{MSG3} & \texttt{DEi}\rightarrow\texttt{ESj}
+& 288 bits & 1 & 1 & Session-key confirmation \\
+\midrule
+Total & & 1696 bits & 13 & 11 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The sender-side hash counts are obtained directly from the equations. For
+example, \texttt{DEi} evaluates two hashes for \texttt{M1}, two for
+\texttt{M2}, three for the session key, and one for \texttt{M6}, giving
+\texttt{8Th}. Similarly, \texttt{ESj} evaluates two hashes for \texttt{M3},
+three for the session key, one for \texttt{M4}, and two for \texttt{M5}, also
+giving \texttt{8Th}. This agrees with the paper's reported computation-cost
+expression of approximately \texttt{8Th} per endpoint.
+
+The receiver-side verification work is separate from the paper's simplified
+\texttt{8Th} accounting. In particular, verification and recovery operations
+introduce additional hash evaluations. Therefore, for a complete implementation
+cost estimate, the verification computations should be included in addition to
+the published sender-side estimate.
+
+Using the paper's average execution times,
+\texttt{Th}=0.055 ms on the server and \texttt{Th}=0.309 ms on Raspberry Pi 3,
+the published \texttt{8Th} estimate corresponds to approximately
+0.44 ms on the server and 2.47 ms on the Raspberry Pi 3.
+
+\subsubsection{Key Management Between \texttt{ESj} and \texttt{CSk}}
+
+The key-management phase follows the same three-message structure:
+
+\begin{align}
+\texttt{MSG1} &= \{\texttt{TINESj},\texttt{m1},\texttt{m2},\texttt{TS1}\},\\
+\texttt{MSG2} &= \{\texttt{m3},\texttt{m4},\texttt{m5},\texttt{TS2}\},\\
+\texttt{MSG3} &= \{\texttt{m6},\texttt{TS3}\}.
+\end{align}
+
+The session key is
+
+\begin{equation}
+\texttt{SKESjCSk} =
+\texttt{h(h(RS2,TCCSk,MSESjCSk,TS2),
+h(RS1,TCESj,MSESjCSk,TS1),
+RIDESj,MSESjCSk,TS1,TS2)}.
+\end{equation}
+
+The message structure is analogous to the authentication phase. Under the same
+field-size assumptions, the three messages have lengths
+
+\begin{align}
+L_{\texttt{MSG1}} &=160+256+256+32=704~\text{bits},\\
+L_{\texttt{MSG2}} &=256+256+160+32=704~\text{bits},\\
+L_{\texttt{MSG3}} &=256+32=288~\text{bits}.
+\end{align}
+
+Consequently, the calculated communication overhead is again
+
+\begin{equation}
+L_{\mathrm{KM}}=1696~\text{bits}.
+\end{equation}
+
+The paper does not provide a separate communication-cost entry for the
+\texttt{ESj}-\texttt{CSk} key-management exchange; therefore this 1696-bit value
+is a derived value based on the published field-size assumptions.
+
+\begin{table}[ht]
+\centering
+\caption{Key-management message size and computation cost.}
+\label{tab:bakmm-keymgmt-cost}
+\begin{tabular}{llllll}
+\toprule
+Message & Direction & Length & Sender hashes & Receiver hashes &
+Purpose \\
+\midrule
+\texttt{MSG1} & \texttt{ESj}\rightarrow\texttt{CSk}
+& 704 bits & 4 & 2 & ES authentication \\
+\texttt{MSG2} & \texttt{CSk}\rightarrow\texttt{ESj}
+& 704 bits & 8 & 5 & Key establishment and confirmation \\
+\texttt{MSG3} & \texttt{ESj}\rightarrow\texttt{CSk}
+& 288 bits & 1 & 1 & Session-key confirmation \\
+\midrule
+Total & & 1696 bits & 13 & 8 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The sender-side generation cost is therefore \texttt{9Th} for \texttt{ESj} when
+all its key-management values are generated, and \texttt{8Th} for \texttt{CSk}.
+The additional receiver-side verification consists of two hashes for the
+\texttt{MSG1} verification, five hashes for \texttt{MSG2} verification and one
+hash for \texttt{MSG3} verification. Thus, the full symbolic computation count
+is higher than the sender-only count. The sender-side total is
+\texttt{17Th}, whereas including the receiver-side verification gives
+\texttt{25Th}.
+
+\subsubsection{Dynamic Device Addition}
+
+The dynamic-device addition phase allows a new drone \texttt{DEv} to be added
+without redesigning the complete network. The registration authority generates
+\texttt{IDDEv}, \texttt{kDEv}, and \texttt{SNDEv}, then derives
+\texttt{RIDDEv} and \texttt{TCDEv}. If \texttt{RIDRA} is already available, the
+addition requires two new hash evaluations:
+
+\begin{align}
+\texttt{RIDDEv} &=
+\texttt{h(RIDRA,IDDEv,kRA,kDEv,SNDEv)},\\
+\texttt{TCDEv} &=
+\texttt{h(RIDRA,IDDEv,kRA,kDEv,SNDEv,RTSDEv)}.
+\end{align}
+
+Hence the computational overhead is approximately \texttt{2Th}, corresponding
+to 0.110 ms on the reported server platform or 0.618 ms on Raspberry Pi 3.
+The paper describes the subsequent sharing of the registration information
+with deployed ground-station servers as secure provisioning; since the exact
+encoding of that provisioning message is not specified, its communication
+length is not assigned an artificial bit count.
+
+\subsubsection{Blockchain Formation}
+
+After successful authentication and key management, \texttt{DEi} data are
+received by \texttt{ESj}. The ground station creates transactions, encrypts
+them using its ECC public key, constructs a partial block and sends the partial
+block to a cloud server. The cloud server constructs the full block and
+disseminates it through the peer-to-peer cloud-server network. A leader then
+initiates pBFT consensus before the block is incorporated into the consortium
+blockchain.
+
+The transaction-level communication overhead is data-dependent. The paper
+reports an additional 640 bits associated with the ECC representation of an
+encrypted transaction, namely 320 bits for each of the two ECC point
+components. Thus, for a plaintext transaction of length
+\texttt{Ltrx}, the corresponding encrypted representation can be expressed as
+
+\begin{equation}
+L_{\texttt{encrypted\_trx}}
+=
+L_{\texttt{trx}}+640~\text{bits},
+\end{equation}
+
+subject to the exact ECC encoding used by the implementation.
+
+The computation cost of the blockchain stage cannot be reduced to a single
+hash count because it uses ECC encryption and ECDSA operations. The paper
+reports average execution times of 0.674 ms and 2.288 ms for elliptic-curve
+point multiplication on the server and Raspberry Pi 3, respectively, while
+ECDSA generation averages 0.729 ms and 2.597 ms and ECDSA verification averages
+1.405 ms and 4.901 ms on the two platforms. If one ECC point multiplication is
+used as a coarse proxy for one ECC transaction-encryption operation, the
+estimated encryption cost is approximately 0.674 ms on the server and
+2.288 ms on Raspberry Pi 3. This is an approximation rather than a directly
+reported encryption benchmark because the paper does not specify the exact
+ECC encryption primitive or its complete operation count.
+
+ECDSA signature generation and verification are block-level operations rather
+than necessarily one operation per transaction. Therefore, their cost should
+be multiplied by the number of blocks/signatures rather than by the number of
+transactions unless the implementation explicitly signs each transaction.
+
+\begin{table}[ht]
+\centering
+\caption{Blockchain computation primitives reported in the paper.}
+\label{tab:bakmm-blockchain-cost}
+\begin{tabular}{llll}
+\toprule
+Primitive & Symbol & Server average & Raspberry Pi 3 average \\
+\midrule
+Hash & \texttt{Th} & 0.055 ms & 0.309 ms \\
+ECC point multiplication & \texttt{Tecm} & 0.674 ms & 2.288 ms \\
+ECDSA generation & \texttt{Tecsigg} & 0.729 ms & 2.597 ms \\
+ECDSA verification & \texttt{Tecsigv} & 1.405 ms & 4.901 ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Overall Technical Assessment}
+
+The corrected SPDL models preserve the central cryptographic structure of the
+BAKMM-IoD protocol while correcting the most important modelling issue in the
+initial implementation: received authentication values must be constrained by
+their expected expressions. In the authentication phase, \texttt{M2},
+\texttt{M4}, and \texttt{M6} therefore act as verification patterns rather than
+unconstrained received variables. The same principle is applied to
+\texttt{m2}, \texttt{m4}, and \texttt{m6} in the key-management phase.
+
+The protocol has three principal security mechanisms. First, freshness is
+provided by \texttt{T1}, \texttt{T2}, \texttt{T3}, \texttt{TS1}, \texttt{TS2},
+and \texttt{TS3}. Second, authentication values are derived from secret
+credentials, pseudo-identities, fresh random values and timestamps. Third, the
+session keys combine long-term secrets with fresh session-specific values,
+preventing an attacker from deriving a session key from public protocol
+transcripts alone.
+
+From a performance perspective, the cryptographic core is hash-dominated. The
+paper therefore reports the authentication/key-establishment computation as
+approximately \texttt{8Th} per endpoint, which corresponds to approximately
+0.44 ms on the server and 2.47 ms on Raspberry Pi 3. The complete equation-level
+analysis shows that receiver-side verification introduces additional hash
+operations, so the published \texttt{8Th} value should be interpreted as a
+simplified endpoint computation estimate rather than a complete accounting of
+every verification operation.
+
+The communication overhead of the three-message authentication exchange is
+reported by the paper as 1792 bits, while direct recomputation using the paper's
+own field sizes gives 1696 bits. This discrepancy should be explicitly recorded
+in a technical report because reproducing the published total without
+reconciling the individual field sizes would make the analysis internally
+inconsistent.
+
+Finally, the blockchain stage changes the dominant cost profile from lightweight
+hashing to ECC and ECDSA operations. Consequently, the authentication and
+key-management phases are computationally lightweight, whereas transaction
+encryption and block-level signature processing constitute the comparatively
+expensive operations. The practical blockchain experiment reported in the paper
+also shows increasing computational time as the number of drones and ground
+station servers increases, while the measured transaction throughput increases
+across the evaluated deployment cases.

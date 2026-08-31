@@ -1,0 +1,186 @@
+/*
+ * BAKMM-IoD - Authentication and Key Establishment
+ * Section 4.2
+ *
+ * The verification equations are represented by receive patterns.
+ */
+
+hashfunction h;
+const xor: Function;
+const cat: Function;
+
+secret const RIDDEi, RIDESj, TCDEi, TCESj, MSDEiESj;
+const TIDDEi;
+
+protocol BAKMMAuth(DE, ES)
+{
+    role DE
+    {
+        fresh rs1: Nonce;
+        fresh T1: Nonce;
+        fresh T3: Nonce;
+
+        var rs2: Nonce;
+        var T2: Nonce;
+        var TIDnewDEi: Nonce;
+
+        macro M1 =
+            xor(
+                h(RIDDEi, MSDEiESj, T1),
+                h(TCDEi, rs1, MSDEiESj, T1)
+            );
+
+        macro M2 =
+            h(
+                h(TCDEi, rs1, MSDEiESj, T1),
+                RIDDEi,
+                T1
+            );
+
+        macro SKDEiESj =
+            h(
+                h(TCDEi, rs1, MSDEiESj, T1),
+                h(RIDESj, TCESj, rs2, MSDEiESj, T2),
+                T1,
+                T2,
+                RIDDEi,
+                MSDEiESj
+            );
+
+        macro M4 =
+            h(
+                SKDEiESj,
+                T1,
+                T2,
+                RIDDEi
+            );
+
+        macro M6 =
+            h(
+                SKDEiESj,
+                T3
+            );
+
+        /* MSG1 = {TID_DEi, M1, M2, T1} */
+        send_1(DE, ES, TIDDEi, M1, M2, T1);
+
+        /*
+         * MSG2 = {M3, M4, M5, T2}.
+         * The receive pattern models:
+         *   M3 XOR h(RIDDEi || MS || T2)
+         *   M4' = M4
+         *   TIDnew = M5 XOR h(h(TCDEi || rs1 || MS || T1) || RIDDEi || T2)
+         */
+        recv_2(
+            ES,
+            DE,
+            xor(
+                h(RIDESj, TCESj, rs2, MSDEiESj, T2),
+                h(RIDDEi, MSDEiESj, T2)
+            ),
+            M4,
+            xor(
+                TIDnewDEi,
+                h(
+                    h(TCDEi, rs1, MSDEiESj, T1),
+                    RIDDEi,
+                    T2
+                )
+            ),
+            T2
+        );
+
+        /* MSG3 = {M6, T3}; ES verifies M6. */
+        send_3(DE, ES, M6, T3);
+
+        claim_DE1(DE, Secret, rs1);
+        claim_DE2(DE, Secret, MSDEiESj);
+        claim_DE3(DE, Secret, SKDEiESj);
+        claim_DE4(DE, Niagree);
+        claim_DE5(DE, Nisynch);
+        claim_DE6(DE, Weakagree);
+        claim_DE7(DE, Alive);
+    }
+
+    role ES
+    {
+        fresh rs2: Nonce;
+        fresh T2: Nonce;
+
+        var rs1: Nonce;
+        var T1: Nonce;
+        var T3: Nonce;
+        var TIDnewDEi: Nonce;
+
+        macro M3 =
+            xor(
+                h(RIDDEi, MSDEiESj, T2),
+                h(RIDESj, TCESj, rs2, MSDEiESj, T2)
+            );
+
+        macro SKESjDEi =
+            h(
+                h(TCDEi, rs1, MSDEiESj, T1),
+                h(RIDESj, TCESj, rs2, MSDEiESj, T2),
+                T1,
+                T2,
+                RIDDEi,
+                MSDEiESj
+            );
+
+        macro M4 =
+            h(
+                SKESjDEi,
+                T1,
+                T2,
+                RIDDEi
+            );
+
+        macro M5 =
+            xor(
+                TIDnewDEi,
+                h(
+                    h(TCDEi, rs1, MSDEiESj, T1),
+                    RIDDEi,
+                    T2
+                )
+            );
+
+        macro M6expected =
+            h(
+                SKESjDEi,
+                T3
+            );
+
+        /* MSG1: ES verifies M1 and M2 through the receive pattern. */
+        recv_1(
+            DE,
+            ES,
+            TIDDEi,
+            xor(
+                h(RIDDEi, MSDEiESj, T1),
+                h(TCDEi, rs1, MSDEiESj, T1)
+            ),
+            h(
+                h(TCDEi, rs1, MSDEiESj, T1),
+                RIDDEi,
+                T1
+            ),
+            T1
+        );
+
+        /* MSG2 = {M3, M4, M5, T2}. */
+        send_2(ES, DE, M3, M4, M5, T2);
+
+        /* MSG3 = {M6, T3}; ES is the receiver in the paper's flow. */
+        recv_3(DE, ES, M6expected, T3);
+
+        claim_ES1(ES, Secret, rs2);
+        claim_ES2(ES, Secret, MSDEiESj);
+        claim_ES3(ES, Secret, SKESjDEi);
+        claim_ES4(ES, Niagree);
+        claim_ES5(ES, Nisynch);
+        claim_ES6(ES, Weakagree);
+        claim_ES7(ES, Alive);
+    }
+}

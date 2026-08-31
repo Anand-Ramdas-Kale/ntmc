@@ -1,0 +1,224 @@
+digraph semiState1 {
+	label = "[Id 1] Protocol BAKMMKeyManagement, role ES, claim type Niagree";
+		r0i0 [shape=box,style=filled,fillcolor="#dba270",label="send_1 to Charlie\n(TINESj,xor(h(TCESj,RS1#1,MSESjCSk,TS1#1),h(RIDESj,MSESjCSk,TS1#1)),h(h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1),TS1#1)"];
+		s0 [label="{ Run #1\lAlice in role ES\l|ES -\> Alice\lCS -\> Charlie\l|Fresh RS1#1, TS1#1, TS3#1\l|Var m5 -\> DataIntruder1\lVar m3 -\> DataIntruder2\lVar TS2 -\> TS2#2\lVar RS2 -\> RS2#2\l}", shape=record,style=filled,fillcolor="#dba270"];
+		s0 -> r0i0 [style=bold, weight="10.0"];
+		r0i1 [shape=box,style=filled,fillcolor="#dba270",label="recv_2 from Charlie\n(DataIntruder2,h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),RIDESj,MSESjCSk,TS2#2),DataIntruder1,TS2#2)"];
+		r0i0 -> r0i1 [style="bold", weight="10.0"];
+		r0i2 [shape=box,style=filled,fillcolor="#dba270",label="send_3 to Charlie\n(h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),TS3#1),TS3#1)"];
+		r0i1 -> r0i2 [style="bold", weight="10.0"];
+		r0i6 [style=filled,fontcolor="#ffffff",fillcolor="#000000",shape=box,label="claim_ES4\nNiagree"];
+		r0i2 -> r0i6 [style="bold", weight="10.0"];
+		r2i0 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_1 from Bob\n(TINESj,xor(h(TCESj,RS1#1,MSESjCSk,TS1#1),h(RIDESj,MSESjCSk,TS1#1)),h(h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1),TS1#1)"];
+		s2 [label="{ Run #2\lDave in role CS\l|ES -\> Bob\lCS -\> Dave\l|Fresh RS2#2, TS2#2, TINnew#2\l|Var TS1 -\> TS1#1\lVar RS1 -\> RS1#1\l}", shape=record,style=filled,fillcolor="#f9d6d1"];
+		s2 -> r2i0 [style=bold, weight="10.0"];
+		r2i1 [shape=box,style=filled,fillcolor="#f9d6d1",label="send_2 to Bob\n(xor(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RIDESj,MSESjCSk,TS1#1,TS2#2)),h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),RIDESj,MSESjCSk,TS2#2),xor(TINnew#2,h(RIDESj,h(RS1#1,TCESj,MSESjCSk,TS1#1),TS2#2)),TS2#2)"];
+		r2i0 -> r2i1 [style="bold", weight="10.0"];
+	r0i0 -> redir_r0i0r2i0 -> r2i0;
+	redir_r0i0r2i0 [style=filled,fillcolor="#f68555",label="select TS1#1\nfake sender Bob\nredirect to Dave\n"];
+	r2i1 -> redir_r2i1r0i1 -> r0i1;
+	redir_r2i1r0i1 [style=filled,fillcolor="#f68555",label="select TS2#2\nfake sender Charlie\nredirect to Alice\n"];
+	intruder [
+		label="Initial intruder knowledge\nThe intruder generates: DataIntruder2, DataIntruder1",
+		style=filled,fillcolor="#f68555"
+	];
+}
+
+digraph semiState2 {
+	label = "[Id 2] Protocol BAKMMKeyManagement, role ES, claim type Nisynch";
+		r0i0 [shape=box,style=filled,fillcolor="#dba270",label="send_1 to Charlie\n(TINESj,xor(h(TCESj,RS1#1,MSESjCSk,TS1#1),h(RIDESj,MSESjCSk,TS1#1)),h(h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1),TS1#1)"];
+		s0 [label="{ Run #1\lAlice in role ES\l|ES -\> Alice\lCS -\> Charlie\l|Fresh RS1#1, TS1#1, TS3#1\l|Var m5 -\> DataIntruder1\lVar m3 -\> DataIntruder2\lVar TS2 -\> TS2#2\lVar RS2 -\> RS2#2\l}", shape=record,style=filled,fillcolor="#dba270"];
+		s0 -> r0i0 [style=bold, weight="10.0"];
+		r0i1 [shape=box,style=filled,fillcolor="#dba270",label="recv_2 from Charlie\n(DataIntruder2,h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),RIDESj,MSESjCSk,TS2#2),DataIntruder1,TS2#2)"];
+		r0i0 -> r0i1 [style="bold", weight="10.0"];
+		r0i2 [shape=box,style=filled,fillcolor="#dba270",label="send_3 to Charlie\n(h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),TS3#1),TS3#1)"];
+		r0i1 -> r0i2 [style="bold", weight="10.0"];
+		r0i7 [style=filled,fontcolor="#ffffff",fillcolor="#000000",shape=box,label="claim_ES5\nNisynch"];
+		r0i2 -> r0i7 [style="bold", weight="10.0"];
+		r2i0 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_1 from Bob\n(TINESj,xor(h(TCESj,RS1#1,MSESjCSk,TS1#1),h(RIDESj,MSESjCSk,TS1#1)),h(h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1),TS1#1)"];
+		s2 [label="{ Run #2\lDave in role CS\l|ES -\> Bob\lCS -\> Dave\l|Fresh RS2#2, TS2#2, TINnew#2\l|Var TS1 -\> TS1#1\lVar RS1 -\> RS1#1\l}", shape=record,style=filled,fillcolor="#f9d6d1"];
+		s2 -> r2i0 [style=bold, weight="10.0"];
+		r2i1 [shape=box,style=filled,fillcolor="#f9d6d1",label="send_2 to Bob\n(xor(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RIDESj,MSESjCSk,TS1#1,TS2#2)),h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),RIDESj,MSESjCSk,TS2#2),xor(TINnew#2,h(RIDESj,h(RS1#1,TCESj,MSESjCSk,TS1#1),TS2#2)),TS2#2)"];
+		r2i0 -> r2i1 [style="bold", weight="10.0"];
+	r0i0 -> redir_r0i0r2i0 -> r2i0;
+	redir_r0i0r2i0 [style=filled,fillcolor="#f68555",label="select TS1#1\nfake sender Bob\nredirect to Dave\n"];
+	r2i1 -> redir_r2i1r0i1 -> r0i1;
+	redir_r2i1r0i1 [style=filled,fillcolor="#f68555",label="select TS2#2\nfake sender Charlie\nredirect to Alice\n"];
+	intruder [
+		label="Initial intruder knowledge\nThe intruder generates: DataIntruder2, DataIntruder1",
+		style=filled,fillcolor="#f68555"
+	];
+}
+
+digraph semiState3 {
+	label = "[Id 3] Protocol BAKMMKeyManagement, role ES, claim type Weakagree";
+		r0i0 [shape=box,style=filled,fillcolor="#dba270",label="send_1 to Charlie\n(TINESj,xor(h(TCESj,RS1#1,MSESjCSk,TS1#1),h(RIDESj,MSESjCSk,TS1#1)),h(h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1),TS1#1)"];
+		s0 [label="{ Run #1\lAlice in role ES\l|ES -\> Alice\lCS -\> Charlie\l|Fresh RS1#1, TS1#1, TS3#1\l|Var m5 -\> DataIntruder1\lVar m3 -\> DataIntruder2\lVar TS2 -\> TS2#2\lVar RS2 -\> RS2#2\l}", shape=record,style=filled,fillcolor="#dba270"];
+		s0 -> r0i0 [style=bold, weight="10.0"];
+		r0i1 [shape=box,style=filled,fillcolor="#dba270",label="recv_2 from Charlie\n(DataIntruder2,h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),RIDESj,MSESjCSk,TS2#2),DataIntruder1,TS2#2)"];
+		r0i0 -> r0i1 [style="bold", weight="10.0"];
+		r0i2 [shape=box,style=filled,fillcolor="#dba270",label="send_3 to Charlie\n(h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),TS3#1),TS3#1)"];
+		r0i1 -> r0i2 [style="bold", weight="10.0"];
+		r0i8 [style=filled,fontcolor="#ffffff",fillcolor="#000000",shape=box,label="claim_ES6\nWeakagree"];
+		r0i2 -> r0i8 [style="bold", weight="10.0"];
+		r2i0 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_1 from Bob\n(TINESj,xor(h(TCESj,RS1#1,MSESjCSk,TS1#1),h(RIDESj,MSESjCSk,TS1#1)),h(h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1),TS1#1)"];
+		s2 [label="{ Run #2\lDave in role CS\l|ES -\> Bob\lCS -\> Dave\l|Fresh RS2#2, TS2#2, TINnew#2\l|Var TS1 -\> TS1#1\lVar RS1 -\> RS1#1\l}", shape=record,style=filled,fillcolor="#f9d6d1"];
+		s2 -> r2i0 [style=bold, weight="10.0"];
+		r2i1 [shape=box,style=filled,fillcolor="#f9d6d1",label="send_2 to Bob\n(xor(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RIDESj,MSESjCSk,TS1#1,TS2#2)),h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),RIDESj,MSESjCSk,TS2#2),xor(TINnew#2,h(RIDESj,h(RS1#1,TCESj,MSESjCSk,TS1#1),TS2#2)),TS2#2)"];
+		r2i0 -> r2i1 [style="bold", weight="10.0"];
+	r0i0 -> redir_r0i0r2i0 -> r2i0;
+	redir_r0i0r2i0 [style=filled,fillcolor="#f68555",label="select TS1#1\nfake sender Bob\nredirect to Dave\n"];
+	r2i1 -> redir_r2i1r0i1 -> r0i1;
+	redir_r2i1r0i1 [style=filled,fillcolor="#f68555",label="select TS2#2\nfake sender Charlie\nredirect to Alice\n"];
+	intruder [
+		label="Initial intruder knowledge\nThe intruder generates: DataIntruder2, DataIntruder1",
+		style=filled,fillcolor="#f68555"
+	];
+}
+
+digraph semiState4 {
+	label = "[Id 4] Protocol BAKMMKeyManagement, role ES, claim type Alive";
+		r0i0 [shape=box,style=filled,fillcolor="#dba270",label="send_1 to Charlie\n(TINESj,xor(h(TCESj,RS1#1,MSESjCSk,TS1#1),h(RIDESj,MSESjCSk,TS1#1)),h(h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1),TS1#1)"];
+		s0 [label="{ Run #1\lAlice in role ES\l|ES -\> Alice\lCS -\> Charlie\l|Fresh RS1#1, TS1#1, TS3#1\l|Var m5 -\> DataIntruder1\lVar m3 -\> DataIntruder2\lVar TS2 -\> TS2#2\lVar RS2 -\> RS2#2\l}", shape=record,style=filled,fillcolor="#dba270"];
+		s0 -> r0i0 [style=bold, weight="10.0"];
+		r0i1 [shape=box,style=filled,fillcolor="#dba270",label="recv_2 from Charlie\n(DataIntruder2,h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),RIDESj,MSESjCSk,TS2#2),DataIntruder1,TS2#2)"];
+		r0i0 -> r0i1 [style="bold", weight="10.0"];
+		r0i2 [shape=box,style=filled,fillcolor="#dba270",label="send_3 to Charlie\n(h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),TS3#1),TS3#1)"];
+		r0i1 -> r0i2 [style="bold", weight="10.0"];
+		r0i9 [style=filled,fontcolor="#ffffff",fillcolor="#000000",shape=box,label="claim_ES7\nAlive"];
+		r0i2 -> r0i9 [style="bold", weight="10.0"];
+		r2i0 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_1 from Bob\n(TINESj,xor(h(TCESj,RS1#1,MSESjCSk,TS1#1),h(RIDESj,MSESjCSk,TS1#1)),h(h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1),TS1#1)"];
+		s2 [label="{ Run #2\lDave in role CS\l|ES -\> Bob\lCS -\> Dave\l|Fresh RS2#2, TS2#2, TINnew#2\l|Var TS1 -\> TS1#1\lVar RS1 -\> RS1#1\l}", shape=record,style=filled,fillcolor="#f9d6d1"];
+		s2 -> r2i0 [style=bold, weight="10.0"];
+		r2i1 [shape=box,style=filled,fillcolor="#f9d6d1",label="send_2 to Bob\n(xor(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RIDESj,MSESjCSk,TS1#1,TS2#2)),h(h(h(RS2#2,TCCSk,MSESjCSk,TS2#2),h(RS1#1,TCESj,MSESjCSk,TS1#1),RIDESj,MSESjCSk,TS1#1,TS2#2),RIDESj,MSESjCSk,TS2#2),xor(TINnew#2,h(RIDESj,h(RS1#1,TCESj,MSESjCSk,TS1#1),TS2#2)),TS2#2)"];
+		r2i0 -> r2i1 [style="bold", weight="10.0"];
+	r0i0 -> redir_r0i0r2i0 -> r2i0;
+	redir_r0i0r2i0 [style=filled,fillcolor="#f68555",label="select TS1#1\nfake sender Bob\nredirect to Dave\n"];
+	r2i1 -> redir_r2i1r0i1 -> r0i1;
+	redir_r2i1r0i1 [style=filled,fillcolor="#f68555",label="select TS2#2\nfake sender Charlie\nredirect to Alice\n"];
+	intruder [
+		label="Initial intruder knowledge\nThe intruder generates: DataIntruder2, DataIntruder1",
+		style=filled,fillcolor="#f68555"
+	];
+}
+
+digraph semiState5 {
+	label = "[Id 5] Protocol BAKMMKeyManagement, role CS, claim type Niagree";
+		r0i0 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_1 from Alice\n(TINESj,xor(h(TCESj,RS1#2,MSESjCSk,TS1#2),h(RIDESj,MSESjCSk,TS1#2)),h(h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2),TS1#2)"];
+		s0 [label="{ Run #1\lCharlie in role CS\l|ES -\> Alice\lCS -\> Charlie\l|Fresh RS2#1, TS2#1, TINnew#1\l|Var TS3 -\> TS3#2\lVar TS1 -\> TS1#2\lVar RS1 -\> RS1#2\l}", shape=record,style=filled,fillcolor="#f9d6d1"];
+		s0 -> r0i0 [style=bold, weight="10.0"];
+		r0i1 [shape=box,style=filled,fillcolor="#f9d6d1",label="send_2 to Alice\n(xor(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RIDESj,MSESjCSk,TS1#2,TS2#1)),h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),RIDESj,MSESjCSk,TS2#1),xor(TINnew#1,h(RIDESj,h(RS1#2,TCESj,MSESjCSk,TS1#2),TS2#1)),TS2#1)"];
+		r0i0 -> r0i1 [style="bold", weight="10.0"];
+		r0i2 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_3 from Alice\n(h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),TS3#2),TS3#2)"];
+		r0i1 -> r0i2 [style="bold", weight="10.0"];
+		r0i6 [style=filled,fontcolor="#ffffff",fillcolor="#000000",shape=box,label="claim_CS4\nNiagree"];
+		r0i2 -> r0i6 [style="bold", weight="10.0"];
+		r2i0 [shape=box,style=filled,fillcolor="#dba270",label="send_1 to Dave\n(TINESj,xor(h(TCESj,RS1#2,MSESjCSk,TS1#2),h(RIDESj,MSESjCSk,TS1#2)),h(h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2),TS1#2)"];
+		s2 [label="{ Run #2\lBob in role ES\l|ES -\> Bob\lCS -\> Dave\l|Fresh RS1#2, TS1#2, TS3#2\l|Var m5 -\> DataIntruder3\lVar m3 -\> DataIntruder4\lVar TS2 -\> TS2#1\lVar RS2 -\> RS2#1\l}", shape=record,style=filled,fillcolor="#dba270"];
+		s2 -> r2i0 [style=bold, weight="10.0"];
+		r2i1 [shape=box,style=filled,fillcolor="#dba270",label="recv_2 from Dave\n(DataIntruder4,h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),RIDESj,MSESjCSk,TS2#1),DataIntruder3,TS2#1)"];
+		r2i0 -> r2i1 [style="bold", weight="10.0"];
+		r2i2 [shape=box,style=filled,fillcolor="#dba270",label="send_3 to Dave\n(h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),TS3#2),TS3#2)"];
+		r2i1 -> r2i2 [style="bold", weight="10.0"];
+	r0i1 -> redir_r0i1r2i1 -> r2i1;
+	redir_r0i1r2i1 [style=filled,fillcolor="#f68555",label="select TS2#1\nfake sender Dave\nredirect to Bob\n"];
+	r2i2 -> redir_r2i2r0i2 -> r0i2;
+	redir_r2i2r0i2 [style=filled,fillcolor="#f68555",label="select TS3#2\nfake sender Alice\nredirect to Charlie\n"];
+	r2i0 -> redir_r2i0r0i0 -> r0i0;
+	redir_r2i0r0i0 [style=filled,fillcolor="#f68555",label="select TS1#2\nfake sender Alice\nredirect to Charlie\n"];
+	intruder [
+		label="Initial intruder knowledge\nThe intruder generates: DataIntruder4, DataIntruder3",
+		style=filled,fillcolor="#f68555"
+	];
+}
+
+digraph semiState6 {
+	label = "[Id 6] Protocol BAKMMKeyManagement, role CS, claim type Nisynch";
+		r0i0 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_1 from Alice\n(TINESj,xor(h(TCESj,RS1#2,MSESjCSk,TS1#2),h(RIDESj,MSESjCSk,TS1#2)),h(h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2),TS1#2)"];
+		s0 [label="{ Run #1\lCharlie in role CS\l|ES -\> Alice\lCS -\> Charlie\l|Fresh RS2#1, TS2#1, TINnew#1\l|Var TS3 -\> TS3#2\lVar TS1 -\> TS1#2\lVar RS1 -\> RS1#2\l}", shape=record,style=filled,fillcolor="#f9d6d1"];
+		s0 -> r0i0 [style=bold, weight="10.0"];
+		r0i1 [shape=box,style=filled,fillcolor="#f9d6d1",label="send_2 to Alice\n(xor(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RIDESj,MSESjCSk,TS1#2,TS2#1)),h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),RIDESj,MSESjCSk,TS2#1),xor(TINnew#1,h(RIDESj,h(RS1#2,TCESj,MSESjCSk,TS1#2),TS2#1)),TS2#1)"];
+		r0i0 -> r0i1 [style="bold", weight="10.0"];
+		r0i2 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_3 from Alice\n(h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),TS3#2),TS3#2)"];
+		r0i1 -> r0i2 [style="bold", weight="10.0"];
+		r0i7 [style=filled,fontcolor="#ffffff",fillcolor="#000000",shape=box,label="claim_CS5\nNisynch"];
+		r0i2 -> r0i7 [style="bold", weight="10.0"];
+		r2i0 [shape=box,style=filled,fillcolor="#dba270",label="send_1 to Dave\n(TINESj,xor(h(TCESj,RS1#2,MSESjCSk,TS1#2),h(RIDESj,MSESjCSk,TS1#2)),h(h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2),TS1#2)"];
+		s2 [label="{ Run #2\lBob in role ES\l|ES -\> Bob\lCS -\> Dave\l|Fresh RS1#2, TS1#2, TS3#2\l|Var m5 -\> DataIntruder3\lVar m3 -\> DataIntruder4\lVar TS2 -\> TS2#1\lVar RS2 -\> RS2#1\l}", shape=record,style=filled,fillcolor="#dba270"];
+		s2 -> r2i0 [style=bold, weight="10.0"];
+		r2i1 [shape=box,style=filled,fillcolor="#dba270",label="recv_2 from Dave\n(DataIntruder4,h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),RIDESj,MSESjCSk,TS2#1),DataIntruder3,TS2#1)"];
+		r2i0 -> r2i1 [style="bold", weight="10.0"];
+		r2i2 [shape=box,style=filled,fillcolor="#dba270",label="send_3 to Dave\n(h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),TS3#2),TS3#2)"];
+		r2i1 -> r2i2 [style="bold", weight="10.0"];
+	r0i1 -> redir_r0i1r2i1 -> r2i1;
+	redir_r0i1r2i1 [style=filled,fillcolor="#f68555",label="select TS2#1\nfake sender Dave\nredirect to Bob\n"];
+	r2i2 -> redir_r2i2r0i2 -> r0i2;
+	redir_r2i2r0i2 [style=filled,fillcolor="#f68555",label="select TS3#2\nfake sender Alice\nredirect to Charlie\n"];
+	r2i0 -> redir_r2i0r0i0 -> r0i0;
+	redir_r2i0r0i0 [style=filled,fillcolor="#f68555",label="select TS1#2\nfake sender Alice\nredirect to Charlie\n"];
+	intruder [
+		label="Initial intruder knowledge\nThe intruder generates: DataIntruder4, DataIntruder3",
+		style=filled,fillcolor="#f68555"
+	];
+}
+
+digraph semiState7 {
+	label = "[Id 7] Protocol BAKMMKeyManagement, role CS, claim type Weakagree";
+		r0i0 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_1 from Alice\n(TINESj,xor(h(TCESj,RS1#2,MSESjCSk,TS1#2),h(RIDESj,MSESjCSk,TS1#2)),h(h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2),TS1#2)"];
+		s0 [label="{ Run #1\lCharlie in role CS\l|ES -\> Alice\lCS -\> Charlie\l|Fresh RS2#1, TS2#1, TINnew#1\l|Var TS3 -\> TS3#2\lVar TS1 -\> TS1#2\lVar RS1 -\> RS1#2\l}", shape=record,style=filled,fillcolor="#f9d6d1"];
+		s0 -> r0i0 [style=bold, weight="10.0"];
+		r0i1 [shape=box,style=filled,fillcolor="#f9d6d1",label="send_2 to Alice\n(xor(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RIDESj,MSESjCSk,TS1#2,TS2#1)),h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),RIDESj,MSESjCSk,TS2#1),xor(TINnew#1,h(RIDESj,h(RS1#2,TCESj,MSESjCSk,TS1#2),TS2#1)),TS2#1)"];
+		r0i0 -> r0i1 [style="bold", weight="10.0"];
+		r0i2 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_3 from Alice\n(h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),TS3#2),TS3#2)"];
+		r0i1 -> r0i2 [style="bold", weight="10.0"];
+		r0i8 [style=filled,fontcolor="#ffffff",fillcolor="#000000",shape=box,label="claim_CS6\nWeakagree"];
+		r0i2 -> r0i8 [style="bold", weight="10.0"];
+		r2i0 [shape=box,style=filled,fillcolor="#dba270",label="send_1 to Dave\n(TINESj,xor(h(TCESj,RS1#2,MSESjCSk,TS1#2),h(RIDESj,MSESjCSk,TS1#2)),h(h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2),TS1#2)"];
+		s2 [label="{ Run #2\lBob in role ES\l|ES -\> Bob\lCS -\> Dave\l|Fresh RS1#2, TS1#2, TS3#2\l|Var m5 -\> DataIntruder3\lVar m3 -\> DataIntruder4\lVar TS2 -\> TS2#1\lVar RS2 -\> RS2#1\l}", shape=record,style=filled,fillcolor="#dba270"];
+		s2 -> r2i0 [style=bold, weight="10.0"];
+		r2i1 [shape=box,style=filled,fillcolor="#dba270",label="recv_2 from Dave\n(DataIntruder4,h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),RIDESj,MSESjCSk,TS2#1),DataIntruder3,TS2#1)"];
+		r2i0 -> r2i1 [style="bold", weight="10.0"];
+		r2i2 [shape=box,style=filled,fillcolor="#dba270",label="send_3 to Dave\n(h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),TS3#2),TS3#2)"];
+		r2i1 -> r2i2 [style="bold", weight="10.0"];
+	r0i1 -> redir_r0i1r2i1 -> r2i1;
+	redir_r0i1r2i1 [style=filled,fillcolor="#f68555",label="select TS2#1\nfake sender Dave\nredirect to Bob\n"];
+	r2i2 -> redir_r2i2r0i2 -> r0i2;
+	redir_r2i2r0i2 [style=filled,fillcolor="#f68555",label="select TS3#2\nfake sender Alice\nredirect to Charlie\n"];
+	r2i0 -> redir_r2i0r0i0 -> r0i0;
+	redir_r2i0r0i0 [style=filled,fillcolor="#f68555",label="select TS1#2\nfake sender Alice\nredirect to Charlie\n"];
+	intruder [
+		label="Initial intruder knowledge\nThe intruder generates: DataIntruder4, DataIntruder3",
+		style=filled,fillcolor="#f68555"
+	];
+}
+
+digraph semiState8 {
+	label = "[Id 8] Protocol BAKMMKeyManagement, role CS, claim type Alive";
+		r0i0 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_1 from Alice\n(TINESj,xor(h(TCESj,RS1#2,MSESjCSk,TS1#2),h(RIDESj,MSESjCSk,TS1#2)),h(h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2),TS1#2)"];
+		s0 [label="{ Run #1\lCharlie in role CS\l|ES -\> Alice\lCS -\> Charlie\l|Fresh RS2#1, TS2#1, TINnew#1\l|Var TS3 -\> TS3#2\lVar TS1 -\> TS1#2\lVar RS1 -\> RS1#2\l}", shape=record,style=filled,fillcolor="#f9d6d1"];
+		s0 -> r0i0 [style=bold, weight="10.0"];
+		r0i1 [shape=box,style=filled,fillcolor="#f9d6d1",label="send_2 to Alice\n(xor(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RIDESj,MSESjCSk,TS1#2,TS2#1)),h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),RIDESj,MSESjCSk,TS2#1),xor(TINnew#1,h(RIDESj,h(RS1#2,TCESj,MSESjCSk,TS1#2),TS2#1)),TS2#1)"];
+		r0i0 -> r0i1 [style="bold", weight="10.0"];
+		r0i2 [shape=box,style=filled,fillcolor="#f9d6d1",label="recv_3 from Alice\n(h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),TS3#2),TS3#2)"];
+		r0i1 -> r0i2 [style="bold", weight="10.0"];
+		r0i9 [style=filled,fontcolor="#ffffff",fillcolor="#000000",shape=box,label="claim_CS7\nAlive"];
+		r0i2 -> r0i9 [style="bold", weight="10.0"];
+		r2i0 [shape=box,style=filled,fillcolor="#dba270",label="send_1 to Dave\n(TINESj,xor(h(TCESj,RS1#2,MSESjCSk,TS1#2),h(RIDESj,MSESjCSk,TS1#2)),h(h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2),TS1#2)"];
+		s2 [label="{ Run #2\lBob in role ES\l|ES -\> Bob\lCS -\> Dave\l|Fresh RS1#2, TS1#2, TS3#2\l|Var m5 -\> DataIntruder3\lVar m3 -\> DataIntruder4\lVar TS2 -\> TS2#1\lVar RS2 -\> RS2#1\l}", shape=record,style=filled,fillcolor="#dba270"];
+		s2 -> r2i0 [style=bold, weight="10.0"];
+		r2i1 [shape=box,style=filled,fillcolor="#dba270",label="recv_2 from Dave\n(DataIntruder4,h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),RIDESj,MSESjCSk,TS2#1),DataIntruder3,TS2#1)"];
+		r2i0 -> r2i1 [style="bold", weight="10.0"];
+		r2i2 [shape=box,style=filled,fillcolor="#dba270",label="send_3 to Dave\n(h(h(h(RS2#1,TCCSk,MSESjCSk,TS2#1),h(RS1#2,TCESj,MSESjCSk,TS1#2),RIDESj,MSESjCSk,TS1#2,TS2#1),TS3#2),TS3#2)"];
+		r2i1 -> r2i2 [style="bold", weight="10.0"];
+	r0i1 -> redir_r0i1r2i1 -> r2i1;
+	redir_r0i1r2i1 [style=filled,fillcolor="#f68555",label="select TS2#1\nfake sender Dave\nredirect to Bob\n"];
+	r2i2 -> redir_r2i2r0i2 -> r0i2;
+	redir_r2i2r0i2 [style=filled,fillcolor="#f68555",label="select TS3#2\nfake sender Alice\nredirect to Charlie\n"];
+	r2i0 -> redir_r2i0r0i0 -> r0i0;
+	redir_r2i0r0i0 [style=filled,fillcolor="#f68555",label="select TS1#2\nfake sender Alice\nredirect to Charlie\n"];
+	intruder [
+		label="Initial intruder knowledge\nThe intruder generates: DataIntruder4, DataIntruder3",
+		style=filled,fillcolor="#f68555"
+	];
+}
+

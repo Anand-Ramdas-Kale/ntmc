@@ -1,0 +1,56 @@
+/*
+ * BAKMM-IoD - Registration / Credential Provisioning Model
+ *
+ * Section 4.1 of the paper.
+ *
+ * Registration is a trusted provisioning phase performed by RA.
+ * The paper does not define an open-channel registration handshake,
+ * so this file models the credential-generation computations only.
+ */
+
+hashfunction h;
+
+secret const SNRA, kRA;
+
+const IDRA, IDDEi, IDESj, IDCSk;
+
+protocol BAKMMRegistration(RA)
+{
+    role RA
+    {
+
+        fresh SNDEi: Nonce;
+        fresh kDEi: Nonce;
+
+        fresh SNEsj: Nonce;
+        fresh kESj: Nonce;
+
+        fresh SNCSk: Nonce;
+        fresh kCSk: Nonce;
+
+        fresh RTSDEi: Nonce;
+        fresh RTSESj: Nonce;
+        fresh RTSCSk: Nonce;
+
+        macro RIDRA =
+            h(IDRA, SNRA, kRA);
+
+        macro RIDDEi =
+            h(RIDRA, IDDEi, kRA, kDEi, SNDEi);
+
+        macro TCDEi =
+            h(RIDRA, IDDEi, kRA, kDEi, SNDEi, RTSDEi);
+
+        macro RIDESj =
+            h(RIDRA, IDESj, kRA, kESj, SNEsj);
+
+        macro TCESj =
+            h(RIDRA, IDESj, kRA, kESj, SNEsj, RTSESj);
+
+        macro RIDCSk =
+            h(RIDRA, IDCSk, kRA, kCSk, SNCSk);
+
+        macro TCCSk =
+            h(RIDRA, IDCSk, kRA, kCSk, SNCSk, RTSCSk);
+    }
+}

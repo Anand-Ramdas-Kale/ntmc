@@ -1,0 +1,189 @@
+/*
+ * BAKMM-IoD - Key Management Phase
+ * Section 4.3
+ *
+ * The verification equations are represented by receive patterns.
+ */
+
+hashfunction h;
+const xor: Function;
+const cat: Function;
+
+secret const RIDESj, TCESj, TCCSk, MSESjCSk;
+const TINESj;
+
+protocol BAKMMKeyManagement(ES, CS)
+{
+    role ES
+    {
+        fresh RS1: Nonce;
+        fresh TS1: Nonce;
+        fresh TS3: Nonce;
+
+        var RS2: Nonce;
+        var TS2: Nonce;
+        var TINnew: Nonce;
+
+        macro M1 =
+            xor(
+                h(TCESj, RS1, MSESjCSk, TS1),
+                h(RIDESj, MSESjCSk, TS1)
+            );
+
+        macro M2 =
+            h(
+                h(RS1, TCESj, MSESjCSk, TS1),
+                RIDESj,
+                MSESjCSk,
+                TS1
+            );
+
+        macro SKESjCSk =
+            h(
+                h(RS2, TCCSk, MSESjCSk, TS2),
+                h(RS1, TCESj, MSESjCSk, TS1),
+                RIDESj,
+                MSESjCSk,
+                TS1,
+                TS2
+            );
+
+        macro M4 =
+            h(
+                SKESjCSk,
+                RIDESj,
+                MSESjCSk,
+                TS2
+            );
+
+        macro M6 =
+            h(
+                SKESjCSk,
+                TS3
+            );
+
+        /* MSG1 = {TIN_ESj, m1, m2, TS1}. */
+        send_1(ES, CS, TINESj, M1, M2, TS1);
+
+        /*
+         * MSG2 = {m3, m4, m5, TS2}.
+         * m4 is constrained to the locally computed value.
+         * m5 is represented as the XOR construction from the paper.
+         */
+        recv_2(
+            CS,
+            ES,
+            xor(
+                h(RS2, TCCSk, MSESjCSk, TS2),
+                h(RIDESj, MSESjCSk, TS1, TS2)
+            ),
+            M4,
+            xor(
+                TINnew,
+                h(
+                    RIDESj,
+                    h(RS1, TCESj, MSESjCSk, TS1),
+                    TS2
+                )
+            ),
+            TS2
+        );
+
+        /* MSG3 = {m6, TS3}. */
+        send_3(ES, CS, M6, TS3);
+
+        claim_ES1(ES, Secret, RS1);
+        claim_ES2(ES, Secret, MSESjCSk);
+        claim_ES3(ES, Secret, SKESjCSk);
+        claim_ES4(ES, Niagree);
+        claim_ES5(ES, Nisynch);
+        claim_ES6(ES, Weakagree);
+        claim_ES7(ES, Alive);
+    }
+
+    role CS
+    {
+        fresh RS2: Nonce;
+        fresh TS2: Nonce;
+        fresh TINnew: Nonce;
+
+        var RS1: Nonce;
+        var TS1: Nonce;
+        var TS3: Nonce;
+
+        macro M3 =
+            xor(
+                h(RS2, TCCSk, MSESjCSk, TS2),
+                h(RIDESj, MSESjCSk, TS1, TS2)
+            );
+
+        macro SKCSkESj =
+            h(
+                h(RS2, TCCSk, MSESjCSk, TS2),
+                h(RS1, TCESj, MSESjCSk, TS1),
+                RIDESj,
+                MSESjCSk,
+                TS1,
+                TS2
+            );
+
+        macro M4 =
+            h(
+                SKCSkESj,
+                RIDESj,
+                MSESjCSk,
+                TS2
+            );
+
+        macro M5 =
+            xor(
+                TINnew,
+                h(
+                    RIDESj,
+                    h(RS1, TCESj, MSESjCSk, TS1),
+                    TS2
+                )
+            );
+
+        macro M6expected =
+            h(
+                SKCSkESj,
+                TS3
+            );
+
+        /*
+         * MSG1. CS verifies m1 and m2 by receiving the exact
+         * expressions it reconstructs from its stored credentials.
+         */
+        recv_1(
+            ES,
+            CS,
+            TINESj,
+            xor(
+                h(TCESj, RS1, MSESjCSk, TS1),
+                h(RIDESj, MSESjCSk, TS1)
+            ),
+            h(
+                h(RS1, TCESj, MSESjCSk, TS1),
+                RIDESj,
+                MSESjCSk,
+                TS1
+            ),
+            TS1
+        );
+
+        /* MSG2 = {m3, m4, m5, TS2}. */
+        send_2(CS, ES, M3, M4, M5, TS2);
+
+        /* MSG3 = {m6, TS3}; CS verifies m6. */
+        recv_3(ES, CS, M6expected, TS3);
+
+        claim_CS1(CS, Secret, RS2);
+        claim_CS2(CS, Secret, MSESjCSk);
+        claim_CS3(CS, Secret, SKCSkESj);
+        claim_CS4(CS, Niagree);
+        claim_CS5(CS, Nisynch);
+        claim_CS6(CS, Weakagree);
+        claim_CS7(CS, Alive);
+    }
+}

@@ -1,0 +1,75 @@
+/*
+ * BAKMM-IoD - Blockchain / Partial Block Transport Model
+ *
+ * Section 4.5 of the paper.
+ *
+ * This model captures the security-relevant data path:
+ *
+ *   transaction --ECC encryption--> partial block
+ *   partial block --ES-CS session key--> CS
+ *
+ * The pBFT consensus and blockchain state machine are implementation
+ * components and are not expanded into a Scyther authentication
+ * protocol here.
+ */
+
+hashfunction h;
+
+const pk: Function;
+const sk: Function;
+inversekeys(pk, sk);
+
+secret const SKESjCSk;
+
+usertype Data;
+
+protocol BAKMMBlockchain(ES, CS)
+{
+    role ES
+    {
+        fresh tx: Data;
+
+        macro EncTx =
+            {tx}pk(ES);
+
+        macro PartialBlock =
+            (
+                ES,
+                pk(ES),
+                EncTx,
+                h(tx)
+            );
+
+        /*
+         * BIP1/BIP2 transport of the partial block.
+         * The session key is the key established by Section 4.3.
+         */
+        send_1(
+            ES,
+            CS,
+            {PartialBlock}SKESjCSk
+        );
+
+        claim_ES1(ES, Secret, tx);
+    }
+
+    role CS
+    {
+        var tx: Data;
+
+        recv_1(
+            ES,
+            CS,
+            {
+                (
+                    ES,
+                    pk(ES),
+                    {tx}pk(ES),
+                    h(tx)
+                )
+            }SKESjCSk
+        );
+
+        claim_CS1(CS, Secret, tx);
+    }
+}

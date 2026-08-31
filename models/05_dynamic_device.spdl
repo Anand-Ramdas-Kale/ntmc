@@ -1,0 +1,55 @@
+/*
+ * BAKMM-IoD - Dynamic Device Addition
+ *
+ * Section 4.4 of the paper.
+ *
+ * DDA1/DDA2 are trusted provisioning operations. No open-channel
+ * authentication exchange is specified, so the model records the
+ * credential derivation rather than inventing a network handshake.
+ */
+
+hashfunction h;
+
+secret const SNRA, kRA;
+
+const IDRA;
+
+protocol BAKMMDynamic(RA)
+{
+    role RA
+    {
+
+        fresh IDDEv: Nonce;
+        fresh kDEv: Nonce;
+        fresh SNDEv: Nonce;
+        fresh RTSDEv: Nonce;
+        fresh TIDDEv: Nonce;
+        fresh MSDEvESj: Nonce;
+
+        macro RIDRA =
+            h(IDRA, SNRA, kRA);
+
+        macro RIDDEv =
+            h(
+                
+                    RIDRA,
+                    IDDEv,
+                    kRA,
+                    kDEv,
+                    SNDEv
+                
+            );
+
+        macro TCDEv =
+            h(
+                
+                    RIDRA,
+                    IDDEv,
+                    kRA,
+                    kDEv,
+                    SNDEv,
+                    RTSDEv
+                
+            );
+    }
+}
