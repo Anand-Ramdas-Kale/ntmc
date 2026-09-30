@@ -1,0 +1,52 @@
+/*
+ * Scyther model of the proposed FSL-AKE-IoD (drone <-> ground station), one session.
+ * Same tool as the base paper (Scyther, Cremers). Open in the Scyther GUI and click
+ * "Verify" (default bounds). K is the current shared per-drone key k(DE,ES).
+ * Timestamps are modelled as fresh values (standard Scyther practice).
+ * Key evolution K' = h(K,SK) is outside Scyther's single-session scope; forward secrecy is
+ * argued in the paper (Sec. 5) and demonstrated in attacks_proposed.py.
+ * NOT executed in the drafting environment - run it before submission and add the screenshot.
+ */
+hashfunction h;
+usertype Timestamp;
+
+protocol FSLAKE(DE, ES)
+{
+    role DE
+    {
+        fresh N1: Nonce;
+        fresh T1: Timestamp;
+        fresh TID: Nonce;
+        var N2: Nonce;
+        var T2: Timestamp;
+
+        send_1(DE, ES, TID, N1, T1, h(k(DE,ES), TID, N1, T1));
+        recv_2(ES, DE, N2, T2, h(h(k(DE,ES), N1, N2, T1, T2, TID), N2, T2));
+
+        claim_DE1(DE, Secret, k(DE,ES));
+        claim_DE2(DE, SKR, h(k(DE,ES), N1, N2, T1, T2, TID));
+        claim_DE3(DE, Alive);
+        claim_DE4(DE, Weakagree);
+        claim_DE5(DE, Niagree);
+        claim_DE6(DE, Nisynch);
+    }
+
+    role ES
+    {
+        var N1: Nonce;
+        var T1: Timestamp;
+        var TID: Nonce;
+        fresh N2: Nonce;
+        fresh T2: Timestamp;
+
+        recv_1(DE, ES, TID, N1, T1, h(k(DE,ES), TID, N1, T1));
+        send_2(ES, DE, N2, T2, h(h(k(DE,ES), N1, N2, T1, T2, TID), N2, T2));
+
+        claim_ES1(ES, Secret, k(DE,ES));
+        claim_ES2(ES, SKR, h(k(DE,ES), N1, N2, T1, T2, TID));
+        claim_ES3(ES, Alive);
+        claim_ES4(ES, Weakagree);
+        /* Injective agreement for ES relies on the (TID,T1,N1) replay cache, which
+           Scyther cannot express; a Niagree claim here may report a replay trace. */
+    }
+}

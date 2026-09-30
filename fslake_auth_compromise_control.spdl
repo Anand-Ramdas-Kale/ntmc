@@ -1,0 +1,51 @@
+/*
+ * CONTROL for fslake_auth_compromise.spdl: the drone does NOT evolve its key (ablation M1 off),
+ * so capture after the session leaks K itself.
+ *
+ * Expected results (NOT RUN - Scyther not installed):
+ *   claim_DE1 Secret SK -> Fail (intruder has K, N1, N2, T1, T2, TID -> SK)
+ *   claim_ES1 Secret SK -> Fail
+ * This shows the compromise model can detect the attack, so an "Ok" in the evolved model is meaningful.
+ */
+hashfunction h;
+usertype Timestamp;
+
+protocol FSLAKENoEvolution(DE, ES)
+{
+    role DE
+    {
+        fresh N1: Nonce;
+        fresh T1: Timestamp;
+        fresh TID: Nonce;
+        var N2: Nonce;
+        var T2: Timestamp;
+
+        macro SK = h(k(DE,ES), N1, N2, T1, T2, TID);
+
+        send_1(DE, ES, TID, N1, T1, h(k(DE,ES), TID, N1, T1));
+        recv_2(ES, DE, N2, T2, h(SK, N2, T2));
+
+        /* drone captured after the session: static key leaks */
+        send_3(DE, ES, k(DE,ES));
+
+        claim_DE1(DE, Secret, SK);
+    }
+
+    role ES
+    {
+        var N1: Nonce;
+        var T1: Timestamp;
+        var TID: Nonce;
+        fresh N2: Nonce;
+        fresh T2: Timestamp;
+        var Kn: Ticket;
+
+        macro SK = h(k(DE,ES), N1, N2, T1, T2, TID);
+
+        recv_1(DE, ES, TID, N1, T1, h(k(DE,ES), TID, N1, T1));
+        send_2(ES, DE, N2, T2, h(SK, N2, T2));
+        recv_3(DE, ES, Kn);
+
+        claim_ES1(ES, Secret, SK);
+    }
+}

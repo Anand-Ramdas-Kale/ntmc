@@ -1,0 +1,59 @@
+/*
+ * FSL-AKE-IoD - forward secrecy under drone capture (compromise model).
+ *
+ * After the session the drone is captured: its whole memory, i.e. the EVOLVED state
+ *   K' = h(K, SK)  and  TID' = h(TID, SK)
+ * is published (send_3 to the network = the intruder learns it).  The claims are placed after the
+ * leak so every trace that reaches them contains the compromise.
+ *
+ * Expected results (NOT RUN - Scyther not installed):
+ *   claim_DE1 Secret SK   -> Ok   (SK needs K; K' = h(K,SK) cannot be inverted)
+ *   claim_DE2 Secret TID  -> n/a  (TID is public in MSG1; linkability is shown in Python instead)
+ * Control: fslake_auth_compromise_control.spdl leaks K itself (no evolution) -> Secret SK fails.
+ *
+ * Why an explicit leak and not Scyther's --LKRafter: LKR reveals k(DE,ES), i.e. the UN-evolved key,
+ * which models "no key evolution" (the control), not FSL-AKE-IoD.
+ */
+hashfunction h;
+usertype Timestamp;
+
+protocol FSLAKEFS(DE, ES)
+{
+    role DE
+    {
+        fresh N1: Nonce;
+        fresh T1: Timestamp;
+        fresh TID: Nonce;
+        var N2: Nonce;
+        var T2: Timestamp;
+
+        macro SK = h(k(DE,ES), N1, N2, T1, T2, TID);
+
+        send_1(DE, ES, TID, N1, T1, h(k(DE,ES), TID, N1, T1));
+        recv_2(ES, DE, N2, T2, h(SK, N2, T2));
+
+        /* drone captured after the session: evolved state leaks */
+        send_3(DE, ES, h(k(DE,ES), SK), h(TID, SK));
+
+        claim_DE1(DE, Secret, SK);
+    }
+
+    role ES
+    {
+        var N1: Nonce;
+        var T1: Timestamp;
+        var TID: Nonce;
+        fresh N2: Nonce;
+        fresh T2: Timestamp;
+        var Kn: Ticket;
+        var TIDn: Ticket;
+
+        macro SK = h(k(DE,ES), N1, N2, T1, T2, TID);
+
+        recv_1(DE, ES, TID, N1, T1, h(k(DE,ES), TID, N1, T1));
+        send_2(ES, DE, N2, T2, h(SK, N2, T2));
+        recv_3(DE, ES, Kn, TIDn);
+
+        claim_ES1(ES, Secret, SK);
+    }
+}

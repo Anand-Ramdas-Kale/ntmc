@@ -1,0 +1,20 @@
+// FSL-AKE-IoD system architecture.  Render: dot -Tsvg fslake_architecture.dot -o fslake_architecture.svg
+digraph ARCH {
+  rankdir=LR; fontname="Helvetica";
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  RA [label="Registration Authority (offline)\nissues {TID_i, K_i}; masked C_i to ES\nadd / revoke drones; must erase K_i", fillcolor="#f3e8ff"];
+  subgraph cluster_d { label="Drone layer"; style=dashed;
+    DE [label="DE_i\n{TID_i, K_i}\n5 h / session\nK <- h(K||SK), TID <- h(TID||SK)", fillcolor="#e8f1ff"]; }
+  subgraph cluster_e { label="Edge layer"; style=dashed;
+    ES [label="ES_j\nsecure element: X_ES\nDB: anchor + candidates (masked)\nreplay cache until T1+dT\n7 h / session", fillcolor="#fff4e0"]; }
+  subgraph cluster_c { label="Cloud / blockchain layer"; style=dashed;
+    CS [label="CS_k (P2P, pBFT)\nverify ECDSA on partial blocks\nappend to consortium chain", fillcolor="#e9f7ef"]; }
+
+  RA -> DE [style=dashed, label="secure provisioning"];
+  RA -> ES [style=dashed];
+  RA -> CS [style=dashed];
+  DE -> ES [label="FSL-AKE: MSG1 608 b / MSG2 448 b\nthen AES-256 under SK"];
+  ES -> CS [label="FSL-AKE (ES = initiator)\nthen partial blocks (ECC-enc, ECDSA)"];
+}

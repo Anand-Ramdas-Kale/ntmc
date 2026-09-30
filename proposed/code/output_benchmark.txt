@@ -1,0 +1,11 @@
+Scheme                      #h DE  #h ES    DE ms    ES ms  msgs   bits
+BAKMM-IoD                       8      8    2.470    0.440     3   1792
+FSL-AKE-IoD (proposed)          5      7    1.544    0.385     2   1056
+
+Drone computation saving : 37.5 %
+Server computation saving: 12.5 %
+Communication saving     : 41.1 %  (1792 -> 1056 bits, 3 -> 2 messages)
+
+Measured full-session time on this machine (Python/SHA-256): BAKMM 0.0375 ms, proposed 0.0232 ms
+
+wrote results.csv, fig_comm_cost.png, fig_comp_cost.png

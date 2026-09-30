@@ -1,0 +1,65 @@
+/*
+ * FSL-AKE-IoD (v2) - drone DE <-> ground station ES, authentication and key establishment.
+ *
+ *   MSG1 = {TID, N1, T1, V1},  V1 = h(K, TID, N1, T1)
+ *   MSG2 = {N2, T2, V2},       SK = h(K, N1, N2, T1, T2, TID),  V2 = h(SK, N2, T2)
+ *
+ * K is the current per-drone key, modelled as the long-term symmetric key k(DE,ES).
+ * Key evolution K' = h(K,SK) happens after the session and is analysed in
+ * fslake_auth_compromise.spdl.  Timestamps are fresh values (standard Scyther practice);
+ * the numeric test |T - T*| <= dT and the ES replay cache cannot be expressed.
+ *
+ * Expected results (NOT RUN on the authoring machine - Scyther not installed):
+ *   DE: Secret SK, SKR SK, Alive, Weakagree, Niagree, Nisynch  -> Ok
+ *   ES: Secret SK, SKR SK, Alive, Weakagree                     -> Ok
+ *   ES: Niagree                                                  -> attack (replay of MSG1: the
+ *       replay cache that prevents it is not expressible in Scyther; this is the reason v2 needs M4+F2)
+ *
+ * Run:  scyther-linux --max-runs=4 fslake_auth.spdl
+ */
+hashfunction h;
+usertype Timestamp;
+
+protocol FSLAKE(DE, ES)
+{
+    role DE
+    {
+        fresh N1: Nonce;
+        fresh T1: Timestamp;
+        fresh TID: Nonce;
+        var N2: Nonce;
+        var T2: Timestamp;
+
+        macro SK = h(k(DE,ES), N1, N2, T1, T2, TID);
+
+        send_1(DE, ES, TID, N1, T1, h(k(DE,ES), TID, N1, T1));
+        recv_2(ES, DE, N2, T2, h(SK, N2, T2));
+
+        claim_DE1(DE, Secret, SK);
+        claim_DE2(DE, SKR, SK);
+        claim_DE3(DE, Alive);
+        claim_DE4(DE, Weakagree);
+        claim_DE5(DE, Niagree);
+        claim_DE6(DE, Nisynch);
+    }
+
+    role ES
+    {
+        var N1: Nonce;
+        var T1: Timestamp;
+        var TID: Nonce;
+        fresh N2: Nonce;
+        fresh T2: Timestamp;
+
+        macro SK = h(k(DE,ES), N1, N2, T1, T2, TID);
+
+        recv_1(DE, ES, TID, N1, T1, h(k(DE,ES), TID, N1, T1));
+        send_2(ES, DE, N2, T2, h(SK, N2, T2));
+
+        claim_ES1(ES, Secret, SK);
+        claim_ES2(ES, SKR, SK);
+        claim_ES3(ES, Alive);
+        claim_ES4(ES, Weakagree);
+        claim_ES5(ES, Niagree);
+    }
+}

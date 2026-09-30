@@ -1,0 +1,21 @@
+// FSL-AKE-IoD v2 message flow (DE <-> ES).  Render: dot -Tsvg fslake_auth.dot -o fslake_auth.svg
+// (Graphviz was not installed on the authoring machine; fslake_auth.svg was drawn by
+//  proposed/code/diagrams.py from the same content.)
+digraph FSLAKE {
+  rankdir=TB; newrank=true; splines=false; nodesep=2.2;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  DE  [label="Drone DE_i\nstores {TID, K}", fillcolor="#e8f1ff"];
+  ES  [label="Ground station ES_j\nSE: X_ES; DB: anchor + candidates\nC = K xor h(X_ES||TID)", fillcolor="#fff4e0"];
+
+  d1 [label="N1, T1\nV1 = h(K||TID||N1||T1)\n(retry only after > 2dT: F4)", fillcolor="#f6f8fa"];
+  e1 [label="|T1 - T*| <= dT ; (TID,T1,N1) not cached (until T1+dT: F2)\nK = C xor h(X_ES||TID) ; check V1\nN2, T2 ; SK = h(K||N1||N2||T1||T2||TID) ; V2 = h(SK||N2||T2)\nanchor: add candidate (TID', K')   |   candidate: promote it (F3)", fillcolor="#f6f8fa"];
+  d2 [label="|T2 - T*| <= dT ; recompute SK ; check V2\nK <- h(K||SK) ; TID <- h(TID||SK)[:160] ; erase N1, old K", fillcolor="#f6f8fa"];
+
+  DE -> d1 [style=invis]; ES -> e1 [style=invis]; e1 -> d2 [style=invis];
+  d1 -> e1 [label="MSG1 = {TID, N1, T1, V1}   608 bits", color="#2a78d6", fontcolor="#2a78d6", constraint=false];
+  e1 -> d2 [label="MSG2 = {N2, T2, V2}   448 bits", color="#eb6834", fontcolor="#eb6834", constraint=false];
+  { rank=same; DE; ES; }
+  { rank=same; d1; e1; }
+}

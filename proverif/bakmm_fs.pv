@@ -1,0 +1,58 @@
+(* BAKMM-IoD DE <-> ES: forward secrecy after drone capture.
+   XOR masking V XOR h(...) is modelled as mask/unmask with the hash as the key, which gives the
+   attacker exactly the one-time-mask algebra (whoever knows the mask recovers V).
+   Phase 1: the drone's memory {TID, RID_DE, TC_DE, MS} is given to the attacker (Sec. 3.2).
+
+   Expected (NOT RUN - ProVerif not installed):
+     query attacker(secretDE) -> RESULT attacker(secretDE[]) is true.   (past SK recovered)
+     query attacker(secretES) -> RESULT attacker(secretES[]) is true.
+   Python equivalent that WAS run: proposed/code/attacks_bakmm_ext.py, A1.
+
+   Run:  proverif proverif/bakmm_fs.pv *)
+
+free c: channel.
+
+fun h(bitstring): bitstring.
+fun mask(bitstring, bitstring): bitstring.
+reduc forall v: bitstring, m: bitstring; unmask(mask(v, m), m) = v.
+
+fun senc(bitstring, bitstring): bitstring.
+reduc forall x: bitstring, k: bitstring; sdec(senc(x, k), k) = x.
+
+free secretDE: bitstring [private].
+free secretES: bitstring [private].
+
+query attacker(secretDE).
+query attacker(secretES).
+
+let DE(TID: bitstring, RID: bitstring, TC: bitstring, MS: bitstring) =
+  new rs1: bitstring; new T1: bitstring;
+  let A = h((TC, rs1, MS, T1)) in
+  out(c, (TID, mask(A, h((RID, MS, T1))), h((A, RID, T1)), T1));
+  in(c, (M3: bitstring, M4: bitstring, M5: bitstring, T2: bitstring));
+  let B = unmask(M3, h((RID, MS, T2))) in
+  let SK = h((A, B, T1, T2, RID, MS)) in
+  if M4 = h((SK, T1, T2, RID)) then
+  new T3: bitstring;
+  out(c, (h((SK, T3)), T3));
+  out(c, senc(secretDE, SK));
+  phase 1;
+  out(c, (TID, RID, TC, MS)).
+
+let ES(TID: bitstring, RID: bitstring, MS: bitstring, RIDES: bitstring, TCES: bitstring) =
+  in(c, (=TID, M1: bitstring, M2: bitstring, T1: bitstring));
+  let A = unmask(M1, h((RID, MS, T1))) in
+  if M2 = h((A, RID, T1)) then
+  new rs2: bitstring; new T2: bitstring; new TIDnew: bitstring;
+  let B = h((RIDES, TCES, rs2, MS, T2)) in
+  let SK = h((A, B, T1, T2, RID, MS)) in
+  out(c, (mask(B, h((RID, MS, T2))), h((SK, T1, T2, RID)), mask(TIDnew, h((A, RID, T2))), T2));
+  in(c, (M6: bitstring, T3: bitstring));
+  if M6 = h((SK, T3)) then
+  out(c, senc(secretES, SK)).
+
+process
+  new TID: bitstring; new RID: bitstring; new TC: bitstring; new MS: bitstring;
+  new RIDES: bitstring; new TCES: bitstring;
+  out(c, TID);
+  ( !DE(TID, RID, TC, MS) | !ES(TID, RID, MS, RIDES, TCES) )

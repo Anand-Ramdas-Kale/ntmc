@@ -1,0 +1,75 @@
+/*
+ * BAKMM-IoD DE <-> ES under drone capture after the session (forward-secrecy test).
+ *
+ * XOR masking  X = V XOR h(key-material)  is modelled as symmetric encryption {V}h(key-material):
+ * whoever knows the mask recovers V, which is exactly the algebra of a one-time mask.
+ * (bakmm_auth.spdl, models/02_*.spdl and the paper's Fig. 3/4 declare `xor` as an uninterpreted
+ *  function; then the intruder can never unmask and Scyther cannot see this attack - see
+ *  bakmm_auth_compromise_xorfun.spdl.)
+ *
+ * MS_{DE-ES} is the long-term key k(DE,ES).  After the session the drone is captured and its whole
+ * memory {TID, RID_DE, TC_DE, MS} leaks (send_4).  The SK formula is the ES-side order used on both
+ * sides (the printed DE-side order never agrees, see attacks_bakmm_ext.py A0).
+ *
+ * Expected results (NOT RUN - Scyther not installed):
+ *   claim_DE1 Secret SK   -> Fail   (A = unmask M1, B = unmask M3, SK = h(A,B,T1,T2,RID,MS))
+ *   claim_ES1 Secret SK   -> Fail
+ *   claim_DE2 Secret TIDn -> Fail   (TID_new = unmask M5 with h(A,RID,T2): pseudonym chain linkable)
+ * Python equivalent (RUN): attacks_bakmm_ext.py A1 - 5/5 past SKs, 3/3 future SKs, chain linked.
+ */
+hashfunction h;
+usertype Timestamp;
+secret const RIDDE, TCDE, RIDES, TCES;
+const TID;
+
+protocol BAKMMCapture(DE, ES)
+{
+    role DE
+    {
+        fresh rs1: Nonce;
+        fresh T1: Timestamp;
+        fresh T3: Timestamp;
+        var T2: Timestamp;
+        var Bv: Ticket;
+        var TIDn: Nonce;
+
+        macro MS = k(DE,ES);
+        macro A = h(TCDE, rs1, MS, T1);
+        macro SK = h(A, Bv, T1, T2, RIDDE, MS);
+
+        send_1(DE, ES, TID, {A}h(RIDDE, MS, T1), h(A, RIDDE, T1), T1);
+        recv_2(ES, DE, {Bv}h(RIDDE, MS, T2), h(SK, T1, T2, RIDDE), {TIDn}h(A, RIDDE, T2), T2);
+        send_3(DE, ES, h(SK, T3), T3);
+
+        /* drone captured after the session (Sec. 3.2 power analysis): memory leaks */
+        send_4(DE, ES, TIDn, RIDDE, TCDE, MS);
+
+        claim_DE1(DE, Secret, SK);
+        claim_DE2(DE, Secret, TIDn);
+    }
+
+    role ES
+    {
+        fresh rs2: Nonce;
+        fresh T2: Timestamp;
+        fresh TIDn: Nonce;
+        var T1: Timestamp;
+        var T3: Timestamp;
+        var A: Ticket;
+        var L1: Ticket;
+        var L2: Ticket;
+        var L3: Ticket;
+        var L4: Ticket;
+
+        macro MS = k(DE,ES);
+        macro B = h(RIDES, TCES, rs2, MS, T2);
+        macro SK = h(A, B, T1, T2, RIDDE, MS);
+
+        recv_1(DE, ES, TID, {A}h(RIDDE, MS, T1), h(A, RIDDE, T1), T1);
+        send_2(ES, DE, {B}h(RIDDE, MS, T2), h(SK, T1, T2, RIDDE), {TIDn}h(A, RIDDE, T2), T2);
+        recv_3(DE, ES, h(SK, T3), T3);
+        recv_4(DE, ES, L1, L2, L3, L4);
+
+        claim_ES1(ES, Secret, SK);
+    }
+}

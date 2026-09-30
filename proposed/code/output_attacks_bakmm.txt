@@ -1,0 +1,38 @@
+
+==============================================================================
+ATTACK 1: physical drone capture -> recover every past session key
+==============================================================================
+  session 1: SK recovered = 964ce35bd61e096a6baa1a7b...  match=True  TID 67f8a4c1 -> 6ef6738e
+  session 2: SK recovered = 40b63f1881c1ea21c63f268b...  match=True  TID 6ef6738e -> 30cab507
+  session 3: SK recovered = b323cda1e1a3f7bd7761f966...  match=True  TID 30cab507 -> 8140d9ec
+  session 4: SK recovered = a8915a8f2231e7be7c5e7d7f...  match=True  TID 8140d9ec -> 93fc8cd5
+  session 5: SK recovered = c4222b86f6b68701212daa79...  match=True  TID 93fc8cd5 -> ec3d1ddc
+
+  RESULT: 5/5 past session keys recovered
+  RESULT: pseudonym chain fully linked across sessions = True  (untraceability broken)
+  RESULT: future session key also recovered = True
+
+==============================================================================
+ATTACK 2: stolen ES verifier table -> impersonate drone to ES
+==============================================================================
+  ES accepted forged drone; shared SK = 7789237008c566a4c3db9ead...  adversary knows SK = True
+  NOTE: TC_DE was random garbage -> TC_DE contributes nothing to authentication.
+
+==============================================================================
+ATTACK 3: de-synchronisation (delete one message)
+==============================================================================
+  ES updates TID 'on_confirm', adversary drops MSG3: drone locked out = True  (ES: unknown TID (desynchronised))
+  ES updates TID 'on_send', adversary drops MSG2: drone locked out = True  (ES: unknown TID (desynchronised))
+
+==============================================================================
+ATTACK 4: replay of MSG1 within Delta-T
+==============================================================================
+  ES accepted the SAME MSG1 twice (accept log = 2); no nonce/timestamp cache -> injective agreement fails, ES state overwritten.
+
+==============================================================================
+SUMMARY (True = attack succeeded against BAKMM-IoD)
+==============================================================================
+  capture   : True
+  verifier  : True
+  desync    : True
+  replay    : True

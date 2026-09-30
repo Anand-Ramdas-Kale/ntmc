@@ -1,0 +1,55 @@
+(* FSL-AKE-IoD (v2) DE <-> ES: forward secrecy after drone capture.
+   Phase 0: unbounded sessions.  Phase 1: the drone is captured and its EVOLVED state
+   (K' = h(K,SK), TID' = h(TID,SK)) is given to the attacker.
+   The session key protects a private message; the query asks whether the attacker learns it.
+
+   Expected (NOT RUN - ProVerif not installed):
+     query attacker(secretDE)  -> RESULT not attacker(secretDE[]) is true.
+     query attacker(secretES)  -> RESULT not attacker(secretES[]) is true.
+   Control: replace the phase-1 output by  out(c, K)  (no key evolution) -> both become false.
+
+   Run:  proverif proverif/fslake_fs.pv *)
+
+free c: channel.
+
+type key.
+type nonce.
+
+fun h_v1(key, bitstring, nonce, nonce): bitstring.            (* V1 = h(K||TID||N1||T1)        *)
+fun h_sk(key, nonce, nonce, nonce, nonce, bitstring): key.    (* SK = h(K||N1||N2||T1||T2||TID) *)
+fun h_v2(key, nonce, nonce): bitstring.                       (* V2 = h(SK||N2||T2)             *)
+fun h_evo(key, key): key.                                     (* K' = h(K||SK)                  *)
+fun h_tid(bitstring, key): bitstring.                         (* TID' = h(TID||SK)              *)
+
+fun senc(bitstring, key): bitstring.
+reduc forall m: bitstring, k: key; sdec(senc(m, k), k) = m.
+
+free secretDE: bitstring [private].
+free secretES: bitstring [private].
+
+query attacker(secretDE).
+query attacker(secretES).
+
+let Drone(K: key, TID: bitstring) =
+  new N1: nonce; new T1: nonce;
+  out(c, (TID, N1, T1, h_v1(K, TID, N1, T1)));
+  in(c, (N2: nonce, T2: nonce, V2: bitstring));
+  let SK = h_sk(K, N1, N2, T1, T2, TID) in
+  if V2 = h_v2(SK, N2, T2) then
+  out(c, senc(secretDE, SK));
+  phase 1;
+  out(c, (h_evo(K, SK), h_tid(TID, SK))).
+
+let Station(K: key, TID: bitstring) =
+  in(c, (=TID, N1: nonce, T1: nonce, V1: bitstring));
+  if V1 = h_v1(K, TID, N1, T1) then
+  new N2: nonce; new T2: nonce;
+  let SK = h_sk(K, N1, N2, T1, T2, TID) in
+  out(c, (N2, T2, h_v2(SK, N2, T2)));
+  out(c, senc(secretES, SK)).
+
+process
+  new K: key;
+  new TID: bitstring;
+  out(c, TID);
+  ( !Drone(K, TID) | !Station(K, TID) )

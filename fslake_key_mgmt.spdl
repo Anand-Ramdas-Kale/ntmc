@@ -1,0 +1,54 @@
+/*
+ * FSL-AKE-IoD (v2) - ground station ES <-> cloud server CS key management.
+ * Same two-message exchange as fslake_auth.spdl with ES as initiator ("device") and CS as
+ * responder; K = k(ES,CS) is the current ES-CS key (evolved after every session like the drone key).
+ *
+ * Expected results (NOT RUN - Scyther not installed): same as fslake_auth.spdl
+ *   ES: all claims Ok;  CS: Secret/SKR/Alive/Weakagree Ok, Niagree -> replay attack (cache not modelled)
+ */
+hashfunction h;
+usertype Timestamp;
+
+protocol FSLAKEKM(ES, CS)
+{
+    role ES
+    {
+        fresh N1: Nonce;
+        fresh TS1: Timestamp;
+        fresh TIN: Nonce;
+        var N2: Nonce;
+        var TS2: Timestamp;
+
+        macro SK = h(k(ES,CS), N1, N2, TS1, TS2, TIN);
+
+        send_1(ES, CS, TIN, N1, TS1, h(k(ES,CS), TIN, N1, TS1));
+        recv_2(CS, ES, N2, TS2, h(SK, N2, TS2));
+
+        claim_ES1(ES, Secret, SK);
+        claim_ES2(ES, SKR, SK);
+        claim_ES3(ES, Alive);
+        claim_ES4(ES, Weakagree);
+        claim_ES5(ES, Niagree);
+        claim_ES6(ES, Nisynch);
+    }
+
+    role CS
+    {
+        var N1: Nonce;
+        var TS1: Timestamp;
+        var TIN: Nonce;
+        fresh N2: Nonce;
+        fresh TS2: Timestamp;
+
+        macro SK = h(k(ES,CS), N1, N2, TS1, TS2, TIN);
+
+        recv_1(ES, CS, TIN, N1, TS1, h(k(ES,CS), TIN, N1, TS1));
+        send_2(CS, ES, N2, TS2, h(SK, N2, TS2));
+
+        claim_CS1(CS, Secret, SK);
+        claim_CS2(CS, SKR, SK);
+        claim_CS3(CS, Alive);
+        claim_CS4(CS, Weakagree);
+        claim_CS5(CS, Niagree);
+    }
+}

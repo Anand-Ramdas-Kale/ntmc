@@ -1,0 +1,67 @@
+/*
+ * SAME capture scenario as bakmm_auth_compromise.spdl, but XOR is declared the way the paper
+ * (Fig. 3/4), bakmm_auth.spdl and models/02_*.spdl declare it:  const xor: Function;
+ * i.e. an uninterpreted function with no cancellation law.
+ *
+ * Expected results (NOT RUN - Scyther not installed):
+ *   claim_DE1 Secret SK -> Ok   <-- FALSE NEGATIVE: the intruder knows h(RID,MS,T1) after the leak
+ *                                   but cannot "un-xor" M1, so it never learns A.
+ * Comparing this file with bakmm_auth_compromise.spdl shows that "No attacks within bounds" for a
+ * xor-based protocol in Scyther says nothing about attacks that need XOR algebra.
+ */
+hashfunction h;
+usertype Timestamp;
+const xor: Function;
+secret const RIDDE, TCDE, RIDES, TCES;
+const TID;
+
+protocol BAKMMCaptureXorFun(DE, ES)
+{
+    role DE
+    {
+        fresh rs1: Nonce;
+        fresh T1: Timestamp;
+        fresh T3: Timestamp;
+        var T2: Timestamp;
+        var rs2: Nonce;
+        var TIDn: Nonce;
+
+        macro MS = k(DE,ES);
+        macro A = h(TCDE, rs1, MS, T1);
+        macro B = h(RIDES, TCES, rs2, MS, T2);
+        macro SK = h(A, B, T1, T2, RIDDE, MS);
+
+        send_1(DE, ES, TID, xor(h(RIDDE, MS, T1), A), h(A, RIDDE, T1), T1);
+        recv_2(ES, DE, xor(h(RIDDE, MS, T2), B), h(SK, T1, T2, RIDDE), xor(TIDn, h(A, RIDDE, T2)), T2);
+        send_3(DE, ES, h(SK, T3), T3);
+        send_4(DE, ES, TIDn, RIDDE, TCDE, MS);
+
+        claim_DE1(DE, Secret, SK);
+    }
+
+    role ES
+    {
+        fresh rs2: Nonce;
+        fresh T2: Timestamp;
+        fresh TIDn: Nonce;
+        var T1: Timestamp;
+        var T3: Timestamp;
+        var rs1: Nonce;
+        var L1: Ticket;
+        var L2: Ticket;
+        var L3: Ticket;
+        var L4: Ticket;
+
+        macro MS = k(DE,ES);
+        macro A = h(TCDE, rs1, MS, T1);
+        macro B = h(RIDES, TCES, rs2, MS, T2);
+        macro SK = h(A, B, T1, T2, RIDDE, MS);
+
+        recv_1(DE, ES, TID, xor(h(RIDDE, MS, T1), A), h(A, RIDDE, T1), T1);
+        send_2(ES, DE, xor(h(RIDDE, MS, T2), B), h(SK, T1, T2, RIDDE), xor(TIDn, h(A, RIDDE, T2)), T2);
+        recv_3(DE, ES, h(SK, T3), T3);
+        recv_4(DE, ES, L1, L2, L3, L4);
+
+        claim_ES1(ES, Secret, SK);
+    }
+}

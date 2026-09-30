@@ -1,0 +1,33 @@
+
+==============================================================================
+ATTACK 1 vs proposed: drone capture -> try to recover past session keys
+==============================================================================
+  past session keys recovered with captured K_n: 0/5
+  captured TID appears in any past transcript (linkable): False
+  (recovering K_{n-1} from K_n = h(K_{n-1}||SK_n) requires inverting SHA-256)
+
+==============================================================================
+ATTACK 2 vs proposed: stolen ES table (without X_ES)
+==============================================================================
+  forged MSG1 rejected: ES: V1 mismatch
+
+==============================================================================
+ATTACK 3 vs proposed: adversary drops MSG2, then drone retries
+==============================================================================
+  recovery session succeeded: True;  following session succeeded: True
+
+==============================================================================
+ATTACK 4 vs proposed: replay MSG1 inside Delta-T
+==============================================================================
+  replay rejected: ES: replay detected (cache)
+
+  correctness: 1000 consecutive sessions, keys agree every time
+
+==============================================================================
+SUMMARY (True = proposed protocol RESISTS the attack)
+==============================================================================
+  capture     : True
+  verifier    : True
+  desync      : True
+  replay      : True
+  correctness : True
