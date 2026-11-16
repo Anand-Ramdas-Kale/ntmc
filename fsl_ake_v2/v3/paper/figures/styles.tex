@@ -1,0 +1,40 @@
+% Shared TikZ styles: black/grey with one accent colour.
+\definecolor{accent}{HTML}{1D4ED8}
+\definecolor{warn}{HTML}{B91C1C}
+\definecolor{lightgrey}{HTML}{E5E7EB}
+\tikzset{
+  party/.style={draw, rounded corners=2pt, fill=lightgrey, minimum width=1.6cm, minimum height=0.6cm, font=\small\bfseries},
+  lifeline/.style={draw=black!45, thin},
+  msg/.style={-{Stealth[length=2mm]}, accent, semithick},
+  lost/.style={-{Stealth[length=2mm]}, warn, semithick, dashed},
+  comp/.style={font=\scriptsize, align=left, text width=#1, inner sep=1pt},
+  comp/.default=6.0cm,
+  mlabel/.style={font=\scriptsize, above, inner sep=1.5pt},
+  box/.style={draw, rounded corners=2pt, align=center, font=\small, inner sep=3pt},
+}
+% Message-sequence charts that stack every element below the previous one (no overlaps).
+% \mscstart{left party}{right party}; \mscL[width]{text}; \mscR[width]{text};
+% \mscmsg{r|l}{label}; \msclost{r|l}{label}; \mscend
+\newcommand{\msclen}{12.6}
+\newcommand{\mscstart}[2]{%
+  \node[party] (pl) at (0,0) {#1}; \node[party] (pr) at (\msclen,0) {#2};
+  \coordinate (prev) at (0,-0.4)}
+\newcommand{\mscL}[2][6.2cm]{%
+  \node[comp=#1, anchor=north west] (cur) at ($(prev)+(0.15,-0.12)$) {#2};
+  \coordinate (prev) at (0,0 |- cur.south)}
+\newcommand{\mscR}[2][6.2cm]{%
+  \node[comp=#1, anchor=north east] (cur) at ($(prev)+(\msclen,0)+(-0.15,-0.12)$) {#2};
+  \coordinate (prev) at (0,0 |- cur.south)}
+\newcommand{\mscmsg}[2]{%
+  \coordinate (m) at ($(prev)+(0,-0.5)$);
+  \ifx r#1\draw[msg] (m) -- node[mlabel] {#2} ($(m)+(\msclen,0)$);\else
+          \draw[msg] ($(m)+(\msclen,0)$) -- node[mlabel] {#2} (m);\fi
+  \coordinate (prev) at ($(m)+(0,-0.05)$)}
+\newcommand{\msclost}[2]{%
+  \coordinate (m) at ($(prev)+(0,-0.5)$);
+  \ifx r#1\draw[lost] (m) -- node[mlabel] {#2} ($(m)+(0.55*\msclen,0)$);\else
+          \draw[lost] ($(m)+(\msclen,0)$) -- node[mlabel] {#2} ($(m)+(0.45*\msclen,0)$);\fi
+  \coordinate (prev) at ($(m)+(0,-0.05)$)}
+\newcommand{\mscend}{%
+  \draw[lifeline] (pl.south) -- ($(0,0 |- prev)+(0,-0.25)$);
+  \draw[lifeline] (pr.south) -- ($(\msclen,0 |- prev)+(0,-0.25)$)}

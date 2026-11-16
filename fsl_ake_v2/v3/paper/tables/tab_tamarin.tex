@@ -1,0 +1,34 @@
+\begin{table*}[!htbp]
+\centering
+\scriptsize
+\caption{Tamarin results, drone--server phase. Same lemma text and reveal rules for all three models; \emph{Sess.}: bound, consecutive sessions per drone--server pair. DNT: did not terminate (killed for lack of memory, 7.7\,GB). Limit lemmas are expected to be falsified. $^\dagger$Backward secrecy: knowledge of a session key does not reveal any earlier session key.}
+\label{tab:tamarin}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{3.9cm}p{4.0cm}cccccc}
+\toprule
+Lemma & Property & BAKMM-IoD & v2 & v3 & Sess. & Steps & Time (s) \\
+\midrule
+\texttt{executable} & honest session runs (executability) & verified & verified & \textbf{verified} & 1 & 12 & 15 \\
+\texttt{executable\_\allowbreak{}retry\_\allowbreak{}lost\_\allowbreak{}msg2} & retry after lost MSG2 runs & n/a & n/a & \textbf{verified} & 1 & 13 & 10 \\
+\texttt{executable\_\allowbreak{}retry\_\allowbreak{}lost\_\allowbreak{}msg1} & retry after lost MSG1 runs & n/a & n/a & \textbf{verified} & 1 & 15 & 8 \\
+\texttt{secrecy\_\allowbreak{}SK} & session-key secrecy (drone view) & DNT & verified & \textbf{verified} & 1 & 155 & 17 \\
+\texttt{secrecy\_\allowbreak{}SK\_\allowbreak{}server} & session-key secrecy (server view) & DNT & verified & \textbf{verified} & 1 & 75 & 12 \\
+\texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone} & injective agreement, drone & DNT & verified & \textbf{verified} & 1 & 132 & 9 \\
+\texttt{inj\_\allowbreak{}agree\_\allowbreak{}server} & injective agreement, server & DNT & verified & \textbf{verified} & 1 & 54 & 8 \\
+\texttt{key\_\allowbreak{}confirmation\_\allowbreak{}server} & key confirmation to the server & DNT & falsified & \textbf{verified} & 1 & 35 & 9 \\
+\texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}drone} & forward secrecy, drone side & DNT & verified & \textbf{verified} & 1 & 133 & 12 \\
+\texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}server} & forward secrecy, server side & DNT & falsified & \textbf{verified} & 1 & 66 & 9 \\
+\texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}all} & forward secrecy, both sides & DNT & falsified & \textbf{verified} & 1 & 133 & 11 \\
+\texttt{other\_\allowbreak{}session\_\allowbreak{}key\_\allowbreak{}leak} & known session key & DNT & verified & \textbf{verified} & 1 & 155 & 16 \\
+\texttt{ephemeral\_\allowbreak{}leak} & ephemeral leak (KSSTI/ESL) & DNT & verified & \textbf{verified} & 1 & 292 & 26 \\
+\texttt{tid\_\allowbreak{}agreement} & next identity agreed & DNT & verified & \textbf{verified} & 1 & 48 & 9 \\
+\texttt{tid\_\allowbreak{}secrecy} & next identity secret & DNT & falsified & \textbf{verified} & 1 & 142 & 17 \\
+\texttt{no\_\allowbreak{}replay\_\allowbreak{}m1} & no replay of MSG1/MSG1r & DNT & verified & \textbf{verified} & 1 & 28 & 6 \\
+\texttt{executable\_\allowbreak{}two\_\allowbreak{}sessions} & two sessions run (executability) & DNT & verified & \textbf{verified} & 2 & 20 & 670 \\
+\texttt{backward\_\allowbreak{}secrecy\_\allowbreak{}paper\_\allowbreak{}def} & backward secrecy$^\dagger$ & DNT & verified & \textbf{verified} & 2 & 1137 & 154 \\
+\texttt{pcs\_\allowbreak{}after\_\allowbreak{}K\_\allowbreak{}leak} & post-compromise security (limit O1) & DNT & falsified & \textbf{falsified} & 2 & 16 & 622 \\
+\texttt{captured\_\allowbreak{}drone\_\allowbreak{}accepts\_\allowbreak{}false\_\allowbreak{}server} & captured drone rejects false server (limit F6) & DNT & falsified & \textbf{falsified} & 1 & 8 & 8 \\
+\texttt{drone\_\allowbreak{}impersonation\_\allowbreak{}with\_\allowbreak{}db\_\allowbreak{}and\_\allowbreak{}X} & database + $X_{ES}$ cannot impersonate (limit F8) & DNT & falsified & \textbf{falsified} & 1 & 10 & 9 \\
+\bottomrule
+\end{tabular}
+\end{table*}

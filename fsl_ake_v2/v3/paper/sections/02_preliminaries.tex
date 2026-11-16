@@ -1,0 +1,34 @@
+\section{Preliminaries}\label{sec:prelim}
+
+\subsection{Notation}
+\Cref{tab:notation} lists the symbols of FSL-AKE v3 with their lengths and holders. For BAKMM-IoD we keep the paper's symbols
+($TID_{DE}$, $RID_{DE}$, $TC_{DE}$, $MS$, $rs_1$, $rs_2$, $M_1$--$M_6$, $T_1$--$T_3$). The ground station $ES$ (the
+ground-station server, GSS, of the BAKMM-IoD paper) is also called the \emph{server}; the cloud server is $CS$.
+\input{tables/tab_notation.tex}
+
+\subsection{Primitives}
+$H(\ell, x_1,\dots,x_n)$ is SHA-256 \citep{fips1804} over the length-prefixed concatenation of a label $\ell$ and the inputs;
+each equation uses its own label, so no two equations hash the same input. $\mathrm{AEAD}_k(\nu; m; ad)$ is AES-128-GCM
+\citep{nist80038d} with a 96-bit nonce and a 128-bit tag; decryption returns either the plaintext or a failure symbol when the
+inputs are not authentic \citep{rfc5116}. $\mathrm{PRP}$ is deterministic AES-128 encryption used for database indices. No key-derivation function other
+than the labelled hash is used, and no XOR.
+
+\subsection{Verification tools}
+\textbf{Tamarin} \citep{meier2013} (tamarin-prover 1.12.0 with Maude 3.5.1, as reported by the binaries) is a
+symbolic prover for protocols with state. Properties are written as lemmas over trace actions; a lemma is \emph{verified} or
+\emph{falsified} with a counterexample trace, and an \texttt{exists-trace} lemma shows that the protocol can run
+(executability). Observational equivalence (\texttt{--diff}) \citep{basin2015} expresses unlinkability. We bound the number of consecutive sessions per drone--server pair where the unbounded search did not
+terminate, and state the bound with every result.
+
+\textbf{Scyther} \citep{cremers2008} (Windows build scyther-w32 v1.3.0; the binary reports its version as
+v1.3.0-dirty) analyses protocols without state across runs. Claims such as \texttt{Secret}, \texttt{SKR},
+\texttt{Alive}, \texttt{Weakagree}, \texttt{Niagree} (non-injective agreement, \citealp{lowe1997}), \texttt{Nisynch}
+(non-injective synchronisation, \citealp{cremers2006}) and \texttt{Commit} are checked up to a bound on the number of runs; Scyther reports a \emph{proof of correctness} when a claim holds for any number of runs, and
+\emph{no attack within bounds} otherwise.
+
+\subsection{Real-Or-Random model}
+In a Real-Or-Random (ROR) style model \citep{abdalla2005}, with hash functions modelled as random oracles
+\citep{bellare1993}, the adversary interacts with protocol instances through
+\textsf{Execute}, \textsf{Send}, \textsf{Reveal} and \textsf{Corrupt} queries and finally asks \textsf{Test} on a fresh
+instance; it receives either the real session key or a random string and must tell which. The scheme is secure if the
+advantage is negligible. We use a single \textsf{Test} query (the Find-then-Guess form) in \cref{sec:ror}.

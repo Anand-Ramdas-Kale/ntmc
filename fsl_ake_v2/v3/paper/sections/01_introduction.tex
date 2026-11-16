@@ -1,0 +1,46 @@
+\section{Introduction}\label{sec:intro}
+
+In the Internet of Drones (IoD), drones send commands, telemetry and sensor data to ground stations over open radio links,
+and ground stations forward data to cloud servers. An attacker can listen to, block, replay and modify these messages, and can
+capture a drone and read its memory. Every session therefore needs mutual authentication, a fresh session key, and protection
+of earlier and later sessions when a device is compromised.
+
+BAKMM-IoD \citep{wazid2025} is a recent scheme for this setting. It provides drone--server and server--cloud authenticated key
+agreement based on hashing and XOR, and a blockchain phase for the data. Its authors claim, among other properties, mutual
+authentication, forward secrecy, untraceability and resistance to drone capture and stolen-verifier attacks, and support the
+claims with an informal analysis and a Scyther verification.
+
+\subsection{Motivation and contribution}
+
+We re-examined BAKMM-IoD with two automated tools, Scyther \citep{cremers2008} and Tamarin \citep{meier2013}, and found that several of these claims do not hold in our Scyther and Tamarin models
+(\cref{sec:bakmm-analysis}). Following the structure of earlier improvement papers such as \citet{li2024}, this paper reports
+the findings and proposes and verifies an improved scheme. Our contributions are:
+\begin{enumerate}
+  \item We show that the published Scyther listing of BAKMM-IoD never reaches any of its claims, that the printed equations of
+        the drone--server and server--cloud phases are inconsistent, and report these and further attacks as findings
+        (\NumFlawsConfirmed\ confirmed, \NumFlawsConditional\ conditional), each with a tool result and an executable control model.
+  \item We propose FSL-AKE v3 (\emph{v3} below; its predecessor in this project is called v2), a three-message scheme without timestamps that replaces XOR masking by authenticated
+        encryption, separates every hash by a label, erases the old key at each commit and evolves it one-way, and repairs a
+        lost message with a keyed one-time pseudonym.
+  \item We verify v3 with Tamarin (\NumVthreeVerified\ of \NumVthreeLemmas\ drone--server lemmas verified, bounded to one
+        session per pair and two for three lemmas, the
+        \NumVthreeFalsified\ remaining ones being stated limits), with Scyther, and with a hand proof in the Real-Or-Random style,
+        and we compare v3 with BAKMM-IoD lemma by lemma under the same attacker.
+  \item We compare cost with the BAKMM-IoD paper's own method and timings and with a desktop benchmark of both reference
+        implementations, and we report every quantity, including those where v3 is higher.
+\end{enumerate}
+
+\subsection{Threat model}\label{sec:threat}
+The attacker controls the network, as in the Dolev--Yao (DY) model \citep{dolev1983} that BAKMM-IoD uses: it reads, blocks,
+replays, reorders and injects messages. In addition, as in the Canetti--Krawczyk (CK) adversary model \citep{canetti2001} that
+BAKMM-IoD adopts (its Sec.~3.2), it may reveal, at any time unless a
+property restricts it: a session key; the ephemeral values of a session; the current memory of a drone (device capture); the
+server database; the server's volatile state; and the server's long-term secret. An insider at the registration authority
+(RA) and a leak of the server database are covered by these reveals. Denial of service, side channels, timing, and the
+consensus of the blockchain phase are out of scope. The blockchain phase and handover between ground stations are outside the
+scheme we propose.
+
+\subsection{Organisation}
+\Cref{sec:prelim} gives notation and tools. \Cref{sec:review} reviews BAKMM-IoD and \cref{sec:bakmm-analysis} analyses it.
+\Cref{sec:scheme} presents FSL-AKE v3, \cref{sec:security} its security analysis and \cref{sec:performance} its performance.
+\Cref{sec:discussion} discusses limitations and \cref{sec:conclusion} concludes.

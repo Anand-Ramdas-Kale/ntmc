@@ -1,0 +1,24 @@
+\begin{table*}[!htbp]
+\centering
+\footnotesize
+\caption{Design rationale (\texttt{spec/changes.json}). Each change, the findings it addresses (F: BAKMM-IoD, \cref{tab:flaws}; O, R: findings on the predecessor v2 and of our specification review, listed in the artifact) and its cost effect.}
+\label{tab:rationale}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{6.4cm}p{1.6cm}p{6.6cm}}
+\toprule
+Change (BAKMM-IoD / v2 $\rightarrow$ v3) & Flaws & Cost effect \\
+\midrule
+Hash with domain-separation labels & F2, F3 & none (label bytes inside the same hash call) \\
+Server erases K at commit; one record per drone & F4, O2 & none for the commit itself \\
+Retry ticket & O2, F7 & server +1 hash (E9) and +1 AES (E10) per session; drone +1 hash and +1 AES only on a retry \\
+Keyed one-time retry pseudonym & F7, O9 & none: same hash call as TID' \\
+Next identity hashed with K & F5, F9, F10 & none \\
+Encrypted database index and record; no XOR & F8, F9, O3 & server: 2 hashes of the XOR mask of v2 replaced by AES operations (5 senc + 1 sdec per session in total) \\
+Key confirmation message & O4 & +1 hash each side, +256 bits \\
+No timestamps & O6 & -32 bits per message \\
+Data record with counter under AEAD & F11 & 1 AES operation per record (as BAKMM-IoD's encryption), +64-bit counter, +128-bit tag \\
+Session keys never stored; all field lengths checked & O5 & none \\
+Check values V2, V3 computed from K, not from SK & R8 & none (same number of hashes) \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,33 @@
+{\scriptsize\setlength{\tabcolsep}{3pt}\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{llp{3.0cm}p{2.1cm}p{1.7cm}lp{3.6cm}}
+\caption{Flaw rows under the same dominance rule, Tamarin only (the Scyther models have no database, memory or state reveal). F1--F11: BAKMM-IoD shared-lemma theories versus v3. O1--O7 are findings on the predecessor v2 and compare the v2 theories (\cref{tab:tamarin}, column v2) with v3; they are counted separately.}\label{tab:flawrows}\\
+\toprule
+Row & Baseline & Lemma(s) & Baseline result & v3 & Comparison & Note \\
+\midrule
+\endfirsthead
+\multicolumn{7}{l}{\Cref{tab:flawrows} (continued)}\\
+\toprule
+Row & Baseline & Lemma(s) & Baseline result & v3 & Comparison & Note \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+F1 & BAKMM-IoD & -- & -- & -- & \textbf{not comparable} & Scyther role reachability: paper listing unreachable (../../evidence/F1) vs v3 reachable; Reachable claims, not a shared lemma \\
+F2 & BAKMM-IoD & -- & -- & -- & \textbf{not comparable} & printed SK order: ../../evidence/F2 (own model) vs v3 executability; the shared baseline uses the corrected order \\
+F3 & BAKMM-IoD & -- & -- & -- & \textbf{not comparable} & printed m1/m2 in the server-cloud phase: ../../evidence/F3 (own model) vs v3 fsl\_v3\_es\_cs\_b1 executability \\
+F4 & BAKMM-IoD & \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}drone}, \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}server}, \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}all} & DNT; DNT; DNT & verified; verified; verified & \textbf{not comparable} &  \\
+F5 & BAKMM-IoD & \texttt{tid\_\allowbreak{}agreement} & DNT & verified & \textbf{not comparable} &  \\
+F6 & BAKMM-IoD & \texttt{captured\_\allowbreak{}drone\_\allowbreak{}accepts\_\allowbreak{}false\_\allowbreak{}server} & DNT & falsified & \textbf{not comparable} & shared limit \\
+F7 & BAKMM-IoD & \texttt{Observational\_\allowbreak{}equivalence} & falsified & verified & \textbf{better} & scenario: both drones lost MSG2; the one-drone-dropped case is limit L04 (v3 falsified) \\
+F8 & BAKMM-IoD & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}server}, \texttt{drone\_\allowbreak{}impersonation\_\allowbreak{}with\_\allowbreak{}db\_\allowbreak{}and\_\allowbreak{}X} & DNT; DNT & verified; falsified & \textbf{not comparable} & database alone (inj\_agree\_server) and database + secrets (limit) \\
+F9 & BAKMM-IoD & \texttt{tid\_\allowbreak{}secrecy} & DNT & verified & \textbf{not comparable} &  \\
+F10 & BAKMM-IoD & \texttt{tid\_\allowbreak{}secrecy}, \texttt{ephemeral\_\allowbreak{}leak} & DNT; DNT & verified; verified & \textbf{not comparable} & approximation: the shared lemmas cover the session-state and ephemeral leaks, not the RID insider of F10 \\
+F11 & BAKMM-IoD & \texttt{no\_\allowbreak{}replay\_\allowbreak{}data} & falsified & verified & \textbf{better} & data-only theories; v3's no-replay follows from the receiver's seen-id check \\
+O1 & v2 & \texttt{pcs\_\allowbreak{}after\_\allowbreak{}K\_\allowbreak{}leak} & falsified & falsified & \textbf{equal} & shared limit \\
+O2 & v2 & \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}server} & falsified & verified & \textbf{better} &  \\
+O3 & v2 & \texttt{tid\_\allowbreak{}secrecy} & falsified & verified & \textbf{better} &  \\
+O4 & v2 & \texttt{key\_\allowbreak{}confirmation\_\allowbreak{}server} & falsified & verified & \textbf{better} &  \\
+O5 & v2 & -- & -- & -- & \textbf{not comparable} & v2 implementation logged SK; not a protocol property of either \\
+O6 & v2 & -- & -- & -- & \textbf{not comparable} & clock synchronisation: design difference, no lemma \\
+O7 & v2 & -- & -- & -- & \textbf{not comparable} & flooding / timing: not analysed by a tool \\
+\end{longtable}}

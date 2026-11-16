@@ -1,0 +1,15 @@
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}
+  \renewcommand{\msclen}{9.0}
+  \mscstart{RA}{$DE$ and $ES$};
+  \mscL[8.0cm]{pick $TID$ (160 bits), $PID$ (96 bits), $K$ (256 bits) and a fresh $dev$};
+  \mscmsg{r}{to $DE$: $\{TID, PID, K\}$};
+  \mscmsg{r}{to $ES$: $\{dev, TID, PID, K\}$};
+  \mscR[8.0cm]{ES stores $I(TID)$, $I(PID)$ (E1) and $(\nu, C)$ (E2)};
+  \mscL[8.0cm]{RA erases $K$, $TID$, $PID$};
+  \mscend;
+\end{tikzpicture}
+\caption{Registration of FSL-AKE v3 (\texttt{spec/fsl\_ake\_v3.md}, \S6.1). Both arrows use the secure registration channel.}
+\label{fig:registration}
+\end{figure}

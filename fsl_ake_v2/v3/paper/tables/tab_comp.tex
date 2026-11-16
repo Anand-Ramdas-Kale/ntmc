@@ -1,0 +1,18 @@
+\begin{table*}[!htbp]
+\centering
+\footnotesize
+\caption{Computation and communication, paper method: operations counted by the implementations' counter, times the BAKMM-IoD paper's average primitive times (Table 6 server, Table 7 Raspberry Pi 3). $T_{ae}$/$T_{ad}$: AES-128-GCM encryption/decryption, not timed by the paper and therefore not included in the ms columns.}
+\label{tab:comp}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{3.1cm}p{2.3cm}rp{3.5cm}rrr}
+\toprule
+Case & Drone ops & Drone ms & Server ops & Server ms & Msgs & Bits \\
+\midrule
+BAKMM-IoD (paper, Table 8 / Table 9) & $8T_h$ & 2.470 & $8T_h$ & 0.440 & 3 & 1792 \\
+BAKMM-IoD (our implementation, counted) & $8T_h$ & 2.472 & $8T_h$ & 0.440 & 3 & 1792 \\
+v3, normal session & $6T_h$ & 1.854 & $7T_h + 3T_{senc} + 2T_{ae} + 1T_{ad}$ & 0.394 + 3 AEAD & 3 & 1248 \\
+v3, MSG2 lost, one retry (whole session) & $7T_h + 1T_{ad}$ & 2.163 + 1 AEAD & $7T_h + 4T_{senc} + 2T_{ae} + 1T_{ad}$ & 0.397 + 3 AEAD & 5 & 2048 \\
+v3, MSG1 lost, one retry (whole session) & $7T_h$ & 2.163 & $7T_h + 3T_{senc} + 1T_{sdec} + 2T_{ae} + 1T_{ad}$ & 0.397 + 3 AEAD & 4 & 1760 \\
+\bottomrule
+\end{tabular}
+\end{table*}

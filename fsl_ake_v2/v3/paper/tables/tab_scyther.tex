@@ -1,0 +1,29 @@
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\caption{Scyther v1.3.0, identical claim set for both protocols. \emph{Ok (proof)}: proof of correctness, valid for any number of runs; \emph{Ok (bound)}: no attack within the bound. BAKMM-IoD at 5 runs did not finish within 600\,s.}
+\label{tab:scyther}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llllll}
+\toprule
+Role & Claim & BAKMM-IoD, 3 runs & v3, 3 runs & v3, 5 runs & v3, 9 runs \\
+\midrule
+DE & Secret long-term key & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+DE & Secret SK & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+DE & SKR(SK) & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+DE & Alive & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+DE & Weakagree & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+DE & Niagree & Fail & Ok (proof) & Ok (proof) & Ok (proof) \\
+DE & Nisynch & Fail & Ok (proof) & Ok (proof) & Ok (proof) \\
+DE & Commit(SK) & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+ES & Secret long-term key & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+ES & Secret SK & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+ES & SKR(SK) & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+ES & Alive & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+ES & Weakagree & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+ES & Niagree & Fail & Ok (proof) & Ok (proof) & Ok (proof) \\
+ES & Nisynch & Fail & Ok (proof) & Ok (proof) & Ok (proof) \\
+ES & Commit(SK) & Ok (bound) & Ok (proof) & Ok (proof) & Ok (proof) \\
+\bottomrule
+\end{tabular}
+\end{table}

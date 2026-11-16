@@ -1,0 +1,17 @@
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\caption{Measured time per session per party in ms, 1000 runs after 50 warm-up, on a desktop (13th Gen Intel(R) Core(TM) i7-1360P, Python 3.12.0, cryptography 46.0.7). These are desktop timings, not drone hardware. Computed from the per-run files \texttt{results/timing/raw\_*.csv} (run of 2026-10-19).}
+\label{tab:measured}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llrrrrr}
+\toprule
+Scheme & Party & Mean & Median & Std dev & Min & Max \\
+\midrule
+BAKMM-IoD & drone & 0.0353 & 0.0349 & 0.0186 & 0.0224 & 0.5140 \\
+BAKMM-IoD & server & 0.0351 & 0.0350 & 0.0132 & 0.0226 & 0.2245 \\
+v3 & drone & 0.0232 & 0.0192 & 0.0315 & 0.0156 & 0.9774 \\
+v3 & server & 0.0661 & 0.0578 & 0.0239 & 0.0478 & 0.3293 \\
+\bottomrule
+\end{tabular}
+\end{table}

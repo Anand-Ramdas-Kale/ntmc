@@ -1,0 +1,22 @@
+\begin{table*}[!htbp]
+\centering
+\footnotesize
+\caption{Cost summary, every quantity, including those where v3 is higher.}
+\label{tab:final-cost}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{3.6cm}rrrp{1.6cm}p{5.6cm}}
+\toprule
+Quantity & BAKMM-IoD & v3 & Diff. & Result & Method \\
+\midrule
+drone time, ms & 2.47 & 1.854 & -0.616 & \textbf{v3 lower} & paper method: our operation count x paper Table 7 (RPi 3) \\
+server time, ms (paper primitives only) & 0.44 & 0.394 & -0.046 & \textbf{v3 lower} & paper method: our count x paper Table 6 \\
+server time, ms (with estimated AES-GCM) & 0.44 & 0.96 & 0.52 & \textbf{v3 HIGHER} & paper method + AES-GCM time = desktop-measured ratio t(GCM)/t(SHA-256) x paper T\_h (estimate) \\
+drone time, ms (measured median) & 0.0349 & 0.0192 & -0.0157 & \textbf{v3 lower} & measured: desktop (13th Gen Intel(R) Core(TM) i7-1360P), 1000 runs; not drone hardware \\
+server time, ms (measured median) & 0.035 & 0.0578 & 0.0228 & \textbf{v3 HIGHER} & measured: desktop (13th Gen Intel(R) Core(TM) i7-1360P), 1000 runs \\
+communication, bits per session & 1792 & 1248 & -544 & \textbf{v3 lower} & field lengths of the paper's Sec. 7.2 \\
+drone storage, bits & 928 & 512 & -416 & \textbf{v3 lower} & field by field (paper\_count.json) \\
+server storage per drone, bits & 672 & 1280 & 608 & \textbf{v3 HIGHER} & field by field \\
+server own secrets, bits & 512 & 128 & -384 & \textbf{v3 lower} & field by field \\
+\bottomrule
+\end{tabular}
+\end{table*}

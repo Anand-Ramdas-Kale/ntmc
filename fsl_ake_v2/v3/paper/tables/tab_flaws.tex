@@ -1,0 +1,24 @@
+\begin{table*}[!htbp]
+\centering
+\footnotesize
+\caption{Findings on BAKMM-IoD. Each result comes from the pack's own model (\texttt{evidence/F1}--\texttt{F11}, files \texttt{model.spdl}/\texttt{model.spthy}), not from the shared-lemma theories of \cref{tab:tamarin,tab:tamarin-extra}; each pack also holds an executable control run.}
+\label{tab:flaws}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{0.6cm}p{1.6cm}p{4.2cm}p{5.2cm}p{2.0cm}}
+\toprule
+Id & Tier & Finding & Tool result (flaw run) & Tool \\
+\midrule
+F1 & confirmed & The paper's Scyther model gives an empty result & Scyther Reachable\_DE9: Fail; Scyther Reachable\_ES9: Fail & Scyther \\
+F2 & confirmed & Printed session-key field order differs between drone and server & scyther: model as printed rejected (Scyther error) & Scyther \\
+F3 & confirmed & Printed m1 and m2 use different hash inputs in the server-cloud phase & scyther: model as printed rejected (Scyther error) & Scyther \\
+F4 & confirmed & No forward secrecy & Tamarin forward\_secrecy: falsified & Tamarin \\
+F5 & confirmed & The new temporary identity can be replaced in transit & Scyther Niagree\_DE4: Fail; Scyther Nisynch\_DE5: Fail; Tamarin agreement\_on\_TIDnew: falsified & Scyther and Tamarin \\
+F6 & confirmed & A captured drone accepts the attacker as its server & Tamarin drone\_agrees\_with\_server: falsified & Tamarin \\
+F7 & confirmed & A drone is traceable whenever a session does not complete & Tamarin Observational\_equivalence: falsified & Tamarin \\
+F8 & conditional & The server's table is enough to act as any of its drones & Tamarin server\_agrees\_with\_drone: falsified & Tamarin \\
+F9 & conditional & With equal timestamps a listener computes the new temporary identity & Tamarin TIDnew\_secret: falsified & Tamarin \\
+F10 & conditional & M1 and M3 share one mask form & Tamarin TIDnew\_secret: falsified & Tamarin \\
+F11 & conditional & A data record can be delivered twice & Tamarin data\_taken\_in\_once: falsified & Tamarin \\
+\bottomrule
+\end{tabular}
+\end{table*}

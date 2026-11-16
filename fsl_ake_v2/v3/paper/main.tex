@@ -1,0 +1,94 @@
+\documentclass[preprint,11pt,authoryear]{elsarticle}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage[section]{placeins}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{siunitx}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise]{cleveref}
+\usepackage[margin=2.3cm]{geometry}
+
+\newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+% Screenshot placeholder: \shot{file name without .png}{caption}{label}
+\newcommand{\shot}[3]{%
+  \begin{minipage}[t]{0.48\textwidth}\centering
+  \IfFileExists{screenshots/#1.png}{\includegraphics[width=\linewidth]{screenshots/#1.png}}%
+  {\fbox{\parbox[c][3.2cm][c]{0.9\linewidth}{\centering\footnotesize Screenshot pending:\\[2pt] {\tiny\texttt{\detokenize{#1.png}}}}}}\\[2pt]
+  {\footnotesize #2}\label{#3}\end{minipage}}
+\crefname{algocf}{Algorithm}{Algorithms}
+\Crefname{algocf}{Algorithm}{Algorithms}
+
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.6}
+\setcounter{totalnumber}{4}\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}
+\input{tables/numbers.tex}
+\input{figures/styles.tex}
+
+% No journal footer: the paper is not submitted anywhere. Page 1 shows only the page number, like the other pages.
+\makeatletter
+\def\ps@pprintTitle{\let\@oddhead\@empty\let\@evenhead\@empty
+  \def\@oddfoot{\reset@font\hfil\thepage\hfil}\let\@evenfoot\@oddfoot}
+\makeatother
+
+\begin{document}
+\begin{frontmatter}
+\title{An improved authentication and key agreement scheme for the Internet of Drones, lightweight on the drone side, with forward and backward secrecy verified under a session bound}
+\author[vnit]{Ankita Bagal}
+\author[vnit]{Anand Ramdas Kale}
+\affiliation[vnit]{organization={Department of Computer Science and Engineering, Visvesvaraya National Institute of Technology (VNIT)},
+  city={Nagpur}, postcode={440010}, state={Maharashtra}, country={India}}
+\begin{abstract}
+In the Internet of Drones, every drone--ground-station session needs mutual authentication and a fresh key. BAKMM-IoD
+(Wazid et al., 2025) claims these properties together with forward secrecy, untraceability and resistance to drone capture,
+supported by a Scyther analysis. With Scyther and Tamarin we show that its published Scyther model never reaches any claim, that
+the printed equations of two phases are inconsistent, that it has no forward secrecy, that the new temporary identity can be
+replaced in transit, that a drone is traceable whenever a session does not complete, and, under a stated condition, that a data
+record can be replayed (\NumFlawsConfirmed\ confirmed and \NumFlawsConditional\ conditional findings in our models).
+We propose FSL-AKE v3: labelled hashing, authenticated encryption instead of XOR masking, erasure with one-way key evolution,
+keyed one-time retry pseudonyms, key confirmation, and no timestamps. Tamarin verifies session-key secrecy, mutual
+authentication, key confirmation, forward secrecy on both sides, backward secrecy (knowledge of a session key does not reveal
+any earlier session key), next-identity secrecy and replay resistance, bounded to one session per drone--server pair (two for
+backward secrecy), and retry unlinkability in a fixed two-drone scenario; Scyther reports a proof of correctness for the
+explicit claims of the normal path; a hand
+proof supports key indistinguishability. With the BAKMM-IoD paper's primitive timings, v3 lowers drone computation by
+\PctDrone\%, communication by \PctBits\% and drone storage by \PctStoreDrone\%. The server stores more per drone
+(\StoreServerVthree\ versus \StoreServerBakmm\ bits), and its server time is higher when the AES-GCM cost is estimated
+from a desktop-measured AES-GCM/SHA-256 ratio (estimate \CostServerWithAEAD\ versus \CostServerBakmm\,ms).
+\end{abstract}
+
+\begin{keyword}
+Internet of Drones \sep authenticated key agreement \sep forward secrecy \sep formal verification \sep Tamarin \sep Scyther
+\end{keyword}
+\end{frontmatter}
+
+\input{sections/01_introduction}
+\input{sections/02_preliminaries}
+\input{sections/03_review}
+\input{sections/04_bakmm_analysis}
+\input{sections/05_scheme}
+\input{sections/06_security}
+\input{sections/07_performance}
+\input{sections/08_discussion}
+\input{sections/09_conclusion}
+
+\section*{Data availability}
+All models, scripts, raw tool outputs and evidence packs are in the artifact folder \texttt{fsl\_ake\_v2/v3/} of the
+project repository: specification \texttt{spec/fsl\_ake\_v3.md}, Tamarin theories \texttt{tamarin/}, Scyther models
+\texttt{scyther/}, reference implementation \texttt{impl/}, outputs \texttt{results/}, and \texttt{scripts/run\_all.sh} and
+\texttt{scripts/run\_evidence.sh} to reproduce them. The tables of this paper are generated by
+\texttt{paper/scripts/make\_tables.py}.
+
+\FloatBarrier
+\bibliographystyle{elsarticle-harv}
+\bibliography{refs}
+\end{document}

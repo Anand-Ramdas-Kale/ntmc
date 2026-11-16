@@ -1,0 +1,33 @@
+\section{Discussion and limitations}\label{sec:discussion}
+
+\textbf{No post-compromise security.} Every input of the next key except $K$ is public, so an attacker who learns $K$ once and
+keeps listening computes every later $K$ and $SK$. Tamarin falsifies \texttt{pcs\_after\_K\_leak}. Recovery after a leak
+\citep{cohngordon2016} would need fresh secret input such as a Diffie--Hellman step, which costs more drone computation.
+
+\textbf{Captured drone (F6).} A drone's memory holds everything the server uses to prove itself, so an attacker holding it can
+act as the server towards that drone (\texttt{captured\_drone\_accepts\_false\_server} falsified). Resisting this needs the
+server to prove itself with a private key the drone does not hold, as in ephemeral--static Diffie--Hellman patterns
+\citep{noise}.
+
+\textbf{Database and $X_{ES}$ (F8 with $X_{ES}$).} An attacker holding both recovers $K$ and can act as the drone
+(\texttt{drone\_impersonation\_with\_db\_and\_X} falsified). The database alone does not suffice
+(\texttt{inj\_agree\_server} and \texttt{tid\_secrecy} verified with the database revealed; Tamarin, one session per pair).
+
+\textbf{Linking a retry.} If the attacker drops $MSG_2$ for exactly one drone, that drone's retry receives a ticket while others
+receive $MSG_2$, so the retry can be linked (equivalence falsified in the mixed scenario).
+
+\textbf{Bounded proofs.} All drone--server Tamarin results are bounded to one session per pair (two for backward secrecy and
+post-compromise security); the unbounded model ran out of memory. The BAKMM-IoD model with the same lemma text did not
+terminate for \NumBakmmBaseDNT\ of \NumBakmmBaseLemmas\ lemmas, so most security rows cannot be compared lemma by lemma. Scyther has no state across runs, so it cannot express forward or backward secrecy or unlinkability. The ROR proof is a hand
+proof.
+
+\textbf{Scope of the comparison.} We compare v3 with BAKMM-IoD only; other IoD schemes were not re-implemented or re-verified,
+so no ranking against them is claimed.
+
+\textbf{Server storage.} Storing $K$ with plain two-block AES instead of AES-GCM would remove two AES-GCM operations per
+session and part of the server storage, at the cost of record integrity, which is outside our threat model. We leave this
+option as future work.
+
+\textbf{Forward secrecy wording.} Forward secrecy here means: compromise of any party's long-term or current state does not
+reveal session keys of sessions that completed before the compromise, a session having completed at a party when that party
+erased its $SK$.

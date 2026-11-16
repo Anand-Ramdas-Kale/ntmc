@@ -1,0 +1,19 @@
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[node distance=1.2cm and 2.2cm, font=\small]
+  \node[party] (ra) {RA};
+  \node[party, below left=1.1cm and 1.6cm of ra] (de) {Drone $DE$};
+  \node[party, below right=1.1cm and 1.6cm of ra] (es) {Ground station $ES$};
+  \node[party, right=2.0cm of es] (cs) {Cloud server $CS$};
+  \draw[dashed, black!60] (ra) -- node[above left, font=\scriptsize, pos=0.5, fill=white, inner sep=1pt] {registration} (de);
+  \draw[dashed, black!60] (ra) -- node[above right, font=\scriptsize, pos=0.5, fill=white, inner sep=1pt] {registration} (es);
+  \draw[msg, <->] (de) -- node[below, font=\scriptsize] {open channel: AKE, retry, data} (es);
+  \draw[msg, <->] (es) -- node[below, font=\scriptsize] {AKE} (cs);
+  \node[font=\scriptsize, below=0.15cm of de, align=center] {stores $TID, PID, K$};
+  \node[font=\scriptsize, below=0.15cm of es, align=center] {stores $I(TID), I(PID)$, $C$, ticket;\\ $X_{ES}$ in a secure element};
+  \node[font=\scriptsize, right=0.1cm of ra, align=left, text=black!70] {registers $DE$, $ES$;\\ erases what it issued};
+\end{tikzpicture}
+\caption{Network model. Dashed lines: registration over a secure channel. Solid arrows: open channels controlled by the
+attacker. The stored values are those of \cref{sec:scheme}.}
+\label{fig:network}
+\end{figure}

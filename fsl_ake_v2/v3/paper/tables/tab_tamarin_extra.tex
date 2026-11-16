@@ -1,0 +1,19 @@
+\begin{table*}[!htbp]
+\centering
+\scriptsize
+\caption{Tamarin results for the data path (theories \texttt{*\_data\_only}, unbounded) and for unlinkability of a retry (observational equivalence, fixed scenario of two drones and one retry).}
+\label{tab:tamarin-extra}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{3.9cm}p{4.0cm}cccccc}
+\toprule
+Lemma & Property & BAKMM-IoD & v2 & v3 & Bound & Steps & Time (s) \\
+\midrule
+\texttt{executable\_\allowbreak{}data} & data path runs & verified & - & \textbf{verified} & unbounded & 8 & 0 \\
+\texttt{no\_\allowbreak{}replay\_\allowbreak{}data} & data record accepted once (F11) & falsified & - & \textbf{verified} & unbounded & 2 & 0 \\
+\texttt{data\_\allowbreak{}integrity} & data integrity & verified & - & \textbf{verified} & unbounded & 6 & 0 \\
+\texttt{data\_\allowbreak{}secrecy} & data secrecy & verified & - & \textbf{verified} & unbounded & 5 & 0 \\
+\texttt{Observational\_\allowbreak{}equivalence} & retry unlinkable, both drones lost MSG2 (F7) & falsified & falsified & \textbf{verified} & scenario & 443 & 13 \\
+\texttt{Observational\_\allowbreak{}equivalence} & retry unlinkable, MSG2 dropped for one drone (limit) & - & - & \textbf{falsified} & scenario & 8 & 9 \\
+\bottomrule
+\end{tabular}
+\end{table*}

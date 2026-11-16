@@ -1,0 +1,53 @@
+{\scriptsize\setlength{\tabcolsep}{2.5pt}\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{rp{3.0cm}p{4.3cm}p{2.5cm}p{2.0cm}l}
+\caption{Security comparison over the 38 checklist items. A row is \emph{better} only if the BAKMM-IoD result is falsified and the v3 result verified under the same lemma text, reveal rules and bound, or, where the BAKMM-IoD Tamarin model did not terminate, for the identical Scyther claim set at 3 runs (Scy); \emph{equal} if both agree (shared limits included); \emph{not comparable} otherwise, e.g.\ when the BAKMM-IoD model did not terminate (DNT). A row with several lemmas takes the weakest of their comparisons. In every (Scy) row the BAKMM-IoD failure is the F5 alteration of $M_5$ (all 60 attack graphs at 3 runs, in \texttt{results/scyther/attacks/}); rows whose item names another attack (2, 3, 14--17, 28) are therefore not comparable, the reason being in \texttt{results/dominance.md}.}\label{tab:checklist}\\
+\toprule
+\# & Item & Lemma(s) & BAKMM-IoD & v3 & Comparison \\
+\midrule
+\endfirsthead
+\multicolumn{6}{l}{\Cref{tab:checklist} (continued)}\\
+\toprule
+\# & Item & Lemma(s) & BAKMM-IoD & v3 & Comparison \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1 & Mutual authentication & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone}, \texttt{inj\_\allowbreak{}agree\_\allowbreak{}server}, \texttt{key\_\allowbreak{}confirmation\_\allowbreak{}server} & attack (Scy, 3 runs); attack (Scy, 3 runs); no attack within 3 runs (Scy) & proof of correctness (Scy); proof of correctness (Scy); proof of correctness (Scy) & \textbf{equal} \\
+2 & Session key agreement & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone} & attack (Scy, 3 runs) & proof of correctness (Scy) & \textbf{not comparable} \\
+3 & Key freshness & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone} & attack (Scy, 3 runs) & proof of correctness (Scy) & \textbf{not comparable} \\
+4 & Secure server-to-cloud communication & server-cloud: no BAKMM-IoD same-lemma theory (v3: fsl\_v3\_es\_cs\_b1 all verified; BAKMM-IoD flaw F3 in its own model) & -- & -- & \textbf{not comparable} \\
+5 & Data confidentiality & \texttt{data\_\allowbreak{}secrecy} & verified & verified & \textbf{equal} \\
+6 & (Perfect) forward secrecy & \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}drone}, \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}server}, \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}all} & DNT; DNT; DNT & verified; verified; verified & \textbf{not comparable} \\
+7 & Backward secrecy & \texttt{backward\_\allowbreak{}secrecy\_\allowbreak{}paper\_\allowbreak{}def} & DNT & verified & \textbf{not comparable} \\
+8 & Known session key attack & \texttt{other\_\allowbreak{}session\_\allowbreak{}key\_\allowbreak{}leak} & no attack within 3 runs (Scy) & proof of correctness (Scy) & \textbf{equal} \\
+9 & Known session-specific temporary information (KSSTI) attack & \texttt{ephemeral\_\allowbreak{}leak} & DNT & verified & \textbf{not comparable} \\
+10 & Ephemeral secret leakage (ESL) attack & \texttt{ephemeral\_\allowbreak{}leak} & DNT & verified & \textbf{not comparable} \\
+11 & Private key leakage resistance & no private keys in either protocol (n/a) & -- & -- & \textbf{not comparable} \\
+12 & Partial key escrow attack & RA erasure is an assumption in both & -- & -- & \textbf{not comparable} \\
+13 & Replay attack & \texttt{no\_\allowbreak{}replay\_\allowbreak{}m1}, \texttt{no\_\allowbreak{}replay\_\allowbreak{}data} & DNT; falsified & verified; verified & \textbf{not comparable} \\
+14 & Man-in-the-middle (MITM) attack & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone}, \texttt{inj\_\allowbreak{}agree\_\allowbreak{}server} & attack (Scy, 3 runs); attack (Scy, 3 runs) & proof of correctness (Scy); proof of correctness (Scy) & \textbf{not comparable} \\
+15 & User / device / drone impersonation attack & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}server} & attack (Scy, 3 runs) & proof of correctness (Scy) & \textbf{not comparable} \\
+16 & Server / GSS impersonation attack & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone} & attack (Scy, 3 runs) & proof of correctness (Scy) & \textbf{not comparable} \\
+17 & Parallel session attack & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone}, \texttt{inj\_\allowbreak{}agree\_\allowbreak{}server} & attack (Scy, 3 runs); attack (Scy, 3 runs) & proof of correctness (Scy); proof of correctness (Scy) & \textbf{not comparable} \\
+18 & Message injection & \texttt{tid\_\allowbreak{}agreement}, \texttt{data\_\allowbreak{}integrity} & DNT; verified & verified; verified & \textbf{not comparable} \\
+19 & Denial-of-service (DoS) attack & not analysed by a tool & -- & -- & \textbf{not comparable} \\
+20 & Eavesdropping for a long time & \texttt{secrecy\_\allowbreak{}SK} & no attack within 3 runs (Scy) & proof of correctness (Scy) & \textbf{equal} \\
+21 & Resistance to known attacks & umbrella item & -- & -- & \textbf{not comparable} \\
+22 & Privileged insider attack & \texttt{drone\_\allowbreak{}impersonation\_\allowbreak{}with\_\allowbreak{}db\_\allowbreak{}and\_\allowbreak{}X} & DNT & falsified & \textbf{not comparable} \\
+23 & Lost / stolen device (smart card loss) attack & \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}drone}, \texttt{captured\_\allowbreak{}drone\_\allowbreak{}accepts\_\allowbreak{}false\_\allowbreak{}server} & DNT; DNT & verified; falsified & \textbf{not comparable} \\
+24 & Device / drone physical capture attack & \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}drone}, \texttt{captured\_\allowbreak{}drone\_\allowbreak{}accepts\_\allowbreak{}false\_\allowbreak{}server} & DNT; DNT & verified; falsified & \textbf{not comparable} \\
+25 & Malicious device deployment attack & registration only; no tool result & -- & -- & \textbf{not comparable} \\
+26 & Side-channel attack & out of scope & -- & -- & \textbf{not comparable} \\
+27 & Password guessing attack & no passwords (n/a) & -- & -- & \textbf{not comparable} \\
+28 & No password verifier table & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}server} & attack (Scy, 3 runs) & proof of correctness (Scy) & \textbf{not comparable} \\
+29 & No password exposure & no passwords (n/a) & -- & -- & \textbf{not comparable} \\
+30 & Password friendly & no passwords (n/a) & -- & -- & \textbf{not comparable} \\
+31 & Timely typo detection & no passwords (n/a) & -- & -- & \textbf{not comparable} \\
+32 & User anonymity / privacy preservation & \texttt{tid\_\allowbreak{}secrecy} & DNT & verified & \textbf{not comparable} \\
+33 & Non-traceability (untraceability) & \texttt{Observational\_\allowbreak{}equivalence} & falsified & verified & \textbf{better} \\
+34 & No clock synchronization & design: v3 has no timestamps, BAKMM-IoD needs clocks (no lemma) & -- & -- & \textbf{not comparable} \\
+35 & Sound repairability & retry repair; no comparable BAKMM-IoD mechanism or lemma & -- & -- & \textbf{not comparable} \\
+36 & Dynamic device / drone addition & registration phase; no lemma & -- & -- & \textbf{not comparable} \\
+37 & Blockchain implementation & blockchain out of scope & -- & -- & \textbf{not comparable} \\
+38 & Formal security verification & BAKMM-IoD: paper's Scyther model reaches no claim (F1); v3: Scyther roles reachable, Tamarin lemmas (see F1 row) & -- & -- & \textbf{not comparable} \\
+\end{longtable}}

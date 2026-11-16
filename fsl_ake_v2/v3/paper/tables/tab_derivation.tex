@@ -1,0 +1,27 @@
+\begin{table*}[!htbp]
+\centering
+\footnotesize
+\caption{Derivation of the cost figures from the BAKMM-IoD paper's average primitive times (its Tables 6--7: $T_h$, $T_{senc}$), its field sizes (Sec.~7.2) and our operation counts (\texttt{results/bench/paper\_count.json}). The AES-GCM time is an \emph{estimate}: the AES-GCM/SHA-256 time ratio measured on our desktop times the paper's $T_h$.}
+\label{tab:derivation}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{3.4cm}p{8.0cm}p{4.2cm}}
+\toprule
+Quantity & Derivation & Result \\
+\midrule
+Drone, v3 & $6\,T_h = 6 \times 0.309$ & 1.854 ms \\
+Drone, BAKMM-IoD & $8\,T_h = 8 \times 0.309$ (paper: 2.47) & 2.472 ms \\
+Drone reduction & $(2.47 - 1.854)/2.47$ & 24.9\% \\
+Server, v3 (paper primitives) & $7\,T_h + 3\,T_{senc} = 7 \times 0.055 + 3 \times 0.003$ & 0.394 ms + 3 AEAD \\
+Server, BAKMM-IoD & $8\,T_h = 8 \times 0.055$ & 0.44 ms \\
+Break-even AEAD time & $(0.44 - 0.394)/3$ & 0.0153 ms \\
+Server, v3, \emph{estimate} & $0.394 + 3 \times (3.429 \times 0.055)$; ratio measured on the desktop & 0.96 ms (estimate) \\
+Communication, normal & v3 $576 + 416 + 256$; BAKMM-IoD $704 + 800 + 288$ & 1248 vs 1792 bits (30.4\% lower) \\
+Communication, $MSG_2$ lost & $576 + 416 + 512 + 288 + 256$ ($MSG_1, MSG_2, MSG_{1r}, MSG_{2r}, MSG_3$) & 2048 bits \\
+Communication, $MSG_1$ lost & $576 + 512 + 416 + 256$ ($MSG_1, MSG_{1r}, MSG_2, MSG_3$) & 1760 bits \\
+Drone storage & v3 160 + 96 + 256; BAKMM-IoD 160 + 256 + 256 + 256 & 512 vs 928 bits (44.8\% lower); v3 up to 832 with $N_1, N_{1r}$ \\
+Server storage per drone & v3 256 + 128 + 96 + 256 + 128 + 128 + 160 + 128; BAKMM-IoD 160 + 256 + 256 & 1280 vs 672 bits \\
+Server, own secrets & field by field (\cref{tab:storage}) & 128 vs 512 bits \\
+Server storage, $n$ drones & per drone $\times n$ + own & v3 $1280n + 128$; BAKMM-IoD $672n + 512$ bits \\
+\bottomrule
+\end{tabular}
+\end{table*}

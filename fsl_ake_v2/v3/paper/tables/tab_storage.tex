@@ -1,0 +1,19 @@
+\begin{table*}[!htbp]
+\centering
+\footnotesize
+\caption{Storage per entity, field by field, same counting rule for both schemes.}
+\label{tab:storage}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{1.6cm}lp{9.6cm}r}
+\toprule
+Entity & Scheme & Stored fields (bits) & Total \\
+\midrule
+drone & BAKMM-IoD & TID\_DE 160, RID\_DE 256, TC\_DE 256, MS\_DE-ES 256 & 928 \\
+drone & v3 & TID 160, PID 96, K 256 & 512 \\
+server per drone & BAKMM-IoD & TID\_DE 160, RID\_DE 256, MS\_DE-ES 256 & 672 \\
+server per drone & v3 & I(TID): 2 AES blocks 256, I(PID): 1 AES block 128, record nonce nu 96, C = AEAD(K): ciphertext 256, C: tag 128, ticket index I(PID\_old): 1 AES block 128, ticket T: ciphertext of N2 160, ticket T: tag 128 & 1280 \\
+server own & BAKMM-IoD & RID\_ES 256, TC\_ES 256 & 512 \\
+server own & v3 & X\_ES 128 & 128 \\
+\bottomrule
+\end{tabular}
+\end{table*}

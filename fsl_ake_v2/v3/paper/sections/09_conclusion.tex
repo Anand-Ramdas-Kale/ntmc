@@ -1,0 +1,14 @@
+\section{Conclusion}\label{sec:conclusion}
+
+We analysed BAKMM-IoD with Scyther and Tamarin and reported \NumFlawsConfirmed\ confirmed and \NumFlawsConditional\
+conditional findings, from a published Scyther model that reaches no claim to missing forward secrecy, an alterable new
+temporary identity, traceability on failed sessions and, under a stated condition, data-record replay. FSL-AKE v3 replaces XOR
+masking by authenticated encryption, separates every hash by a label, erases and evolves its key at every session, repairs lost
+messages with keyed one-time pseudonyms, confirms the key to the server and uses no timestamps. Tamarin verifies
+\NumVthreeVerified\ of \NumVthreeLemmas\ drone--server lemmas within the stated bounds, the remaining ones being stated limits;
+Scyther reports a proof of correctness for every explicit claim of the normal path; and a hand proof supports key
+indistinguishability. With the BAKMM-IoD paper's timings, v3 lowers drone computation by \PctDrone\%, communication by
+\PctBits\% and drone storage by \PctStoreDrone\%; it stores more per drone on the server (\StoreServerVthree\ versus
+\StoreServerBakmm\ bits), and its server time is higher both with an estimated AES-GCM cost (estimate \CostServerWithAEAD\
+versus \CostServerBakmm\,ms) and on desktop measurements (\MeasServerVthree\ versus \MeasServerBakmm\,ms). The last evidence
+rerun of all packs (\texttt{results/evidence\_run.txt}) gave \EvItems\ items and \EvFail\ failures.

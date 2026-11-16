@@ -1,0 +1,21 @@
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}
+  \mscstart{$DE$}{$ES$};
+  \mscmsg{r}{$MSG_1=\{TID, N_1, V_1\}$ \ (576 bits)};
+  \mscR[8.0cm]{S5: commit; ticket $T$ (E10) stored under the old index $I(PID)$};
+  \msclost{l}{$MSG_2$ lost};
+  \mscL{no answer: fresh $N_{1r}$; $V_{1r}$ (E3r)};
+  \mscmsg{r}{$MSG_{1r}=\{PID, N_{1r}, V_{1r}\}$ \ (512 bits)};
+  \mscR[9.0cm]{S2r: $I(PID)$ indexes a \emph{ticket} (case b): reply with $T$ unchanged\\ (the server cannot check $V_{1r}$: $K$ is erased)};
+  \mscmsg{l}{$MSG_{2r}=\{T\}$ \ (288 bits)};
+  \mscL[9.0cm]{D2r: $R$ (E9) with $N_1$; open $T$ (E10) to get $N_2$; $SK$ (E4); D3 as in \cref{fig:ake}};
+  \mscmsg{r}{$MSG_3=\{V_3\}$ \ (256 bits)};
+  \mscend;
+  \node[comp=12.3cm, anchor=north west, font=\footnotesize] at ($(prev)+(0.15,-0.4)$) {%
+    Case (a), $MSG_1$ lost: $I(PID)$ still indexes the record; ES checks $V_{1r}$ (E3r) and runs S3--S5 with $n=N_{1r}$.};
+\end{tikzpicture}
+\caption{Retry path of FSL-AKE v3 (\texttt{spec/fsl\_ake\_v3.md}, \S6.3), case (b), $MSG_2$ lost: at most one retry per session can be unlinkable (only when every candidate drone lost $MSG_2$). The keyed pseudonym $PID$ comes from E8
+of the previous session.}
+\label{fig:retry}
+\end{figure}

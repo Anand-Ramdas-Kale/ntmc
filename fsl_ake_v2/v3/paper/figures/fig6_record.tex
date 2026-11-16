@@ -1,0 +1,12 @@
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\scriptsize, cell/.style={draw, minimum height=0.7cm, align=center}]
+  \node[cell, minimum width=2.0cm, fill=lightgrey] (c) at (0,0) {$ctr$\\(64)};
+  \node[cell, minimum width=5.0cm, right=0pt of c] (ct) {$\mathrm{AEAD}_{KD}$ ciphertext of $data$\\(length of $data$)};
+  \node[cell, minimum width=2.2cm, right=0pt of ct] (tag) {tag\\(128)};
+  \node[font=\scriptsize, below=0.35cm of ct, align=center] {nonce $= dir\,\|\,ctr$ (32 + 64 bits); associated data $= \text{``dat''}\,\|\,dir\,\|\,ctr$;\\
+     $KD = SK[0..127]$ (E11); accepted only if the AEAD opens and $ctr$ is larger than the last accepted counter (E12)};
+\end{tikzpicture}
+\caption{Data-record format of FSL-AKE v3 (\texttt{spec/fsl\_ake\_v3.md}, \S6.5): \num{192} bits plus the data.}
+\label{fig:record}
+\end{figure}

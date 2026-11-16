@@ -1,0 +1,42 @@
+{\scriptsize\setlength{\tabcolsep}{3pt}\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{llp{2.6cm}lp{2.6cm}p{5.6cm}}
+\caption{Scyther's auto-generated claims (GUI \emph{Autoverify}, CLI \texttt{--auto-claims}) on the v3 models, 5 runs; identical at 3 and 4 runs. They replace the explicit claims of \cref{tab:scyther}; the normal-path window is panel (h) of \cref{fig:shots-scyther2}. Every failing \texttt{Secret} claim concerns a value that the protocol sends in clear; the attack graphs (\texttt{results/scyther/autoclaims/}) are honest runs observed by a passive attacker. \texttt{V1rx} is the name, in \texttt{scyther/fsl\_v3\_de\_es\_retry.spdl}, of the server's variable that receives the field $V_{1r}$ of $MSG_{1r}$.}\label{tab:scyther-auto}\\
+\toprule
+Branch & Role & Auto-claim & Verdict & Scyther note & Explanation \\
+\midrule
+\endfirsthead
+\multicolumn{6}{l}{\Cref{tab:scyther-auto} (continued)}\\
+\toprule
+Branch & Role & Auto-claim & Verdict & Scyther note & Explanation \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+normal & DE & Secret N1 & Fail & at least 1 attack & public by design: in clear in $MSG_1$; honest run, passive attacker \\
+normal & DE & Secret N2 & Fail & at least 1 attack & public by design: in clear in $MSG_2$; honest run, passive attacker \\
+normal & DE & Alive & Ok & proof of correctness &  \\
+normal & DE & Weakagree & Ok & proof of correctness &  \\
+normal & DE & Niagree & Ok & proof of correctness &  \\
+normal & DE & Nisynch & Ok & proof of correctness &  \\
+normal & ES & Secret N2 & Fail & at least 1 attack & public by design: in clear in $MSG_2$; honest run, passive attacker \\
+normal & ES & Secret N1 & Fail & at least 1 attack & public by design: in clear in $MSG_1$; honest run, passive attacker \\
+normal & ES & Alive & Ok & proof of correctness &  \\
+normal & ES & Weakagree & Ok & proof of correctness &  \\
+normal & ES & Niagree & Ok & proof of correctness &  \\
+normal & ES & Nisynch & Ok & proof of correctness &  \\
+retry & DE & Secret N1r & Fail & at least 1 attack & public by design: in clear in $MSG_{1r}$; honest run, passive attacker \\
+retry & DE & Secret N1 & Fail & at least 1 attack & public by design: in clear in $MSG_1$; honest run, passive attacker \\
+retry & DE & Secret N2 & Fail & at least 1 attack & public by design: in clear in $MSG_2$; honest run, passive attacker \\
+retry & DE & Alive & Ok & proof of correctness &  \\
+retry & DE & Weakagree & Ok & proof of correctness &  \\
+retry & DE & Niagree & Fail & at least 1 attack & by design: server cannot check $MSG_{1r}$ after erasing $K$ \\
+retry & DE & Nisynch & Fail & at least 1 attack & by design: server cannot check $MSG_{1r}$ after erasing $K$ \\
+retry & ES & Secret N2 & Fail & at least 1 attack & public by design: in clear in $MSG_2$; honest run, passive attacker \\
+retry & ES & Secret V1rx & Fail & at least 1 attack & public by design: the $V_{1r}$ field, in clear in $MSG_{1r}$; honest run, passive attacker \\
+retry & ES & Secret N1r & Fail & at least 1 attack & public by design: in clear in $MSG_{1r}$; honest run, passive attacker \\
+retry & ES & Secret N1 & Fail & at least 1 attack & public by design: in clear in $MSG_1$; honest run, passive attacker \\
+retry & ES & Alive & Ok & no attack within bounds &  \\
+retry & ES & Weakagree & Ok & no attack within bounds &  \\
+retry & ES & Niagree & Fail & at least 1 attack & by design: server cannot check $MSG_{1r}$ after erasing $K$ \\
+retry & ES & Nisynch & Fail & at least 1 attack & by design: server cannot check $MSG_{1r}$ after erasing $K$ \\
+\end{longtable}}

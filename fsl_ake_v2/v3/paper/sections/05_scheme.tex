@@ -1,0 +1,45 @@
+\section{The proposed scheme: FSL-AKE v3}\label{sec:scheme}
+
+FSL-AKE v3 is a drone--server and server--cloud authenticated key agreement with key confirmation. \Cref{tab:rationale} lists
+each design change, the findings it addresses and its cost effect; the full specification is \texttt{spec/fsl\_ake\_v3.md} of
+the artifact. \Cref{fig:network} shows the entities.
+\input{figures/fig1_network.tex}
+\input{tables/tab_rationale.tex}
+
+\subsection{Equations}
+Every computation is written once; both sides of every check use the same numbered equation. The equations below are
+generated from the specification.
+{\small\input{tables/eq_v3.tex}}
+
+\subsection{Registration}
+The RA picks $TID$, $PID$ and $K$ at random and a fresh device number $dev$, gives $(TID, PID, K)$ to the drone and
+$(dev, TID, PID, K)$ to the ground station over a secure channel, and erases them (\cref{fig:registration}). The ground station
+stores the indices $I(TID)$, $I(PID)$ (E1) and the record $(\nu, C)$ (E2).
+\input{figures/fig3_registration.tex}
+
+\subsection{Drone--server authentication and key establishment}
+\Cref{fig:ake} shows the three messages. The drone sends $MSG_1 = \{TID, N_1, V_1\}$. The ground station checks lengths, finds
+the record by $I(TID)$, decrypts $K$ and checks $V_1$ (E3). It then picks $N_2$, computes $SK$ (E4), $V_2$ (E5), $V_3$ (E6),
+$K'$ (E7), $TID'$ and $PID'$ (E8), $R$ (E9) and the ticket $T$ (E10), and commits atomically: it stores the new record over $K'$,
+deletes the old record and the previous ticket, stores $T$ under the old index $I(PID)$, and erases $K$ and $R$. It sends
+$MSG_2 = \{N_2, V_2\}$. The drone checks $V_2$ (E5), computes $SK$ (E4), and in one atomic step computes $V_3$, $K'$, $TID'$,
+$PID'$, stores them and erases $K$, $TID$, $PID$ and $N_1$; it then sends $MSG_3 = \{V_3\}$. The ground station accepts $SK$
+only if $V_3$ equals the pending value. The check values $V_2$ and $V_3$ are computed from $K$, so $SK$ enters no public value.
+\input{figures/fig4_ake.tex}
+
+\subsection{Retry}
+If the drone gets no $MSG_2$ it sends $MSG_{1r} = \{PID, N_{1r}, V_{1r}\}$ (E3r). If $I(PID)$ still indexes the record,
+$MSG_1$ was lost and the ground station runs the normal steps with $n = N_{1r}$; if it indexes a ticket, $MSG_2$ was lost and
+the ground station returns $T$ unchanged, from which the drone recovers $N_2$ with $R$ (E9) (\cref{fig:retry}). The drone keeps
+$N_1$ and $N_{1r}$ in non-volatile memory until it has an answer and never replaces them before D3; if it loses them it must be
+registered again. A second retry resends the same $MSG_{1r}$, so at most one retry per session can be unlinkable, and only when
+every candidate drone lost $MSG_2$ (Tamarin, fixed scenario); it is linkable if $MSG_2$ is dropped for one drone only
+(\cref{sec:discussion}).
+\input{figures/fig5_retry.tex}
+
+\subsection{Server--cloud phase, data records and revocation}
+The server--cloud phase uses the same messages and equations with the ground station as initiator, holding $\{TIN, PIN, K\}$,
+and the cloud server as responder. Data records carry a counter under AEAD (E11, E12, \cref{fig:record}); the receiver
+accepts a record only if it decrypts and its counter is larger than the last accepted one. Revocation deletes the record, both
+indices and the ticket of a device.
+\input{figures/fig6_record.tex}

@@ -1,0 +1,163 @@
+\section{Security analysis of FSL-AKE v3}\label{sec:security}
+
+\subsection{Formal proof in the Real-Or-Random style (hand proof)}\label{sec:ror}
+\emph{This subsection is a hand proof; it is not machine-checked.} It follows \texttt{spec/ror\_proof.md}, which went through
+an internal review during the project (not an external peer review); objection R1 of that review led to the present form of
+E5 and E6 (\cref{sec:scheme}).
+
+\textbf{Assumptions.} (A1) each labelled hash is an independent random oracle with 256-bit output; (A2) AES-128-GCM is a
+multi-query secure AEAD (IND-CPA and INT-CTXT) with advantage $\mathrm{Adv}^{ae}$ per key; (A3) the index E1 depends only on
+the identifier and $X_{idx}$; (A4) erased values are not available to later corruptions; (A5) registration runs over a secure
+channel and the RA erases what it issued; (A6) nonces, the first $K$ and $X_{ES}$ are uniform.
+
+\textbf{Queries and freshness.} The adversary uses \textsf{Execute}, \textsf{Send}, \textsf{Reveal} (a session key),
+\textsf{CorruptDE} (the drone's memory), \textsf{CorruptDB} (the server database), \textsf{CorruptState} (the server's
+pending and running keys), \textsf{CorruptX} ($X_{ES}$), \textsf{RevealEph} and one \textsf{Test}. A drone instance and a
+server instance \emph{match} if they used the same $(TID, n, N_2)$. An accepted instance is fresh if (1) no \textsf{Reveal}
+of it or of a matching instance; (2) no \textsf{CorruptDE} before its drone erased $SK$; (3) no \textsf{CorruptState} before the
+matching server instance erased $SK$, and no \textsf{CorruptDB} together with \textsf{CorruptX} before the record holding this
+session's $K$ was erased. Condition (2) excludes F6, condition (3) excludes F8 with $X_{ES}$, and the absence of corruption
+before a session excludes post-compromise security.
+
+\textbf{Theorem.} With $q = q_s + q_e$ \textsf{Send} and \textsf{Execute} queries and $q_h$ oracle queries,
+\begin{equation*}
+\mathrm{Adv} \le \frac{q_h^2}{2^{256}} + \frac{9q^2}{2^{160}} + \frac{q^2}{2^{96}} + \frac{q_s}{2^{255}} + \frac{q_h}{2^{126}}
+ + \frac{q_h(q+1)}{2^{255}} + 4(q+1)\,\mathrm{Adv}^{ae}.
+\end{equation*}
+
+\textbf{Game sequence.} G0 is the real attack. G1 simulates the random oracles by tables (no change). G2 aborts on collisions
+of oracle outputs, of the up to three nonces per session, and of the 96-bit pseudonyms (the last affects only availability).
+G3 aborts if the adversary queries an oracle input containing the key $K$ of a fresh session, or $X_{ES}$ without corrupting
+it; by induction over the key chain each $K$ is uniform to the adversary until it is erased. G4 replaces every stored record
+$C$ and ticket $T$ by encryptions of zeros (A2). G5 aborts on accepted check values or tickets the partner did not produce;
+after G5 every accepting server has a matching accepting drone (key confirmation). In G6 the tested
+$SK = H(\text{``sk''}, K, TID, n, N_2)$ has an unqueried input used by no other session, and no public value is a function of
+$SK$, so the Test answer is independent of the adversary's view. Doubling the sum of the differences gives the bound: G2
+gives the first three terms (oracle-output, nonce and pseudonym collisions), G3 the terms $q_h(q+1)/2^{255}$ (guessing a
+chain key) and $q_h/2^{126}$ (guessing the 128-bit $X_{ES}$ in either of its two oracle inputs), G5 the term $q_s/2^{255}$
+(forging a check value), and G4 and G5 one $(q+1)\mathrm{Adv}^{ae}$ each (hiding and forging records and tickets).
+
+\subsection{Automated verification with Tamarin}\label{sec:tamarin}
+\textbf{Modelling.} The protocol state is held in linear facts that are consumed when the protocol moves on (explicit
+erasure); each stored value also has a persistent memory copy that only reveal rules read, and a restriction forbids reading a
+value after it was erased. The reveal rules are those of the threat model (\cref{sec:threat}). The same lemma text and reveal
+rules are applied to the v2 predecessor and to a BAKMM-IoD model, so that results can be compared lemma by lemma.
+
+\textbf{Bounds.} The unbounded drone--server model was killed for lack of memory on its executability lemma. All drone--server
+results are therefore \emph{bounded}: one consecutive session per drone--server pair; the three lemmas that need two sessions
+use a two-session bound. The data-path theory is unbounded; the unlinkability theories are a fixed scenario of two drones and
+one retry. Every v3 drone--server, server--cloud, data-path and unlinkability theory has a verified executability lemma
+(\cref{tab:tamarin,tab:tamarin-extra}); the two-session executability of the BAKMM-IoD model did not terminate.
+
+\textbf{Results.} \Cref{tab:tamarin} gives the drone--server lemmas. On v3, \NumVthreeVerified\ of \NumVthreeLemmas\ lemmas
+are verified; the \NumVthreeFalsified\ falsified ones are the stated limits (post-compromise security, F6, F8 with $X_{ES}$),
+each with a trace we read. Of the \NumBakmmBaseLemmas\ BAKMM-IoD lemmas under the same text, \NumBakmmBaseDNT\ did not
+terminate within the 7.7\,GB memory limit, also after two changes of the prover settings; only its one-session
+executability terminated. The server--cloud theory verifies \NumCSverified\ of \NumCSlemmas\ lemmas (one session per pair). \Cref{tab:tamarin-extra} gives the
+data path, where BAKMM-IoD's \texttt{no\_replay\_data} is falsified and v3's verified, and unlinkability, where v3 is verified
+when every candidate drone lost $MSG_2$ and falsified when $MSG_2$ is dropped for exactly one drone.
+Every verdict in \cref{tab:tamarin,tab:tamarin-extra} is read from a saved prover output, one file per lemma, in
+\texttt{results/tamarin/main/<theory>/<lemma>.txt} (line~2 holds the verdict, step count and time).
+\input{tables/tab_tamarin.tex}
+\input{tables/tab_tamarin_extra.tex}
+
+\subsection{Automated verification with Scyther}\label{sec:scyther}
+We model v3 in the style of the BAKMM-IoD listing, one protocol branch per file, and give the BAKMM-IoD listing (made
+runnable) exactly the same claim set. Both are verified with the same settings. \Cref{tab:scyther} compares them. For v3 every
+explicit claim of the normal path is a proof of correctness. For BAKMM-IoD at the bound that finishes (3 runs; 5 runs did not finish
+within \ScyBakmmFiveSecs\,s), \texttt{Niagree} and \texttt{Nisynch} fail for both roles: the attack trace alters $M_5$ (F5). In
+the retry branch of v3, \texttt{Niagree} and \texttt{Nisynch} fail by design, because the ground station cannot check
+$MSG_{1r}$ after erasing $K$; agreement on $SK$ (\texttt{Commit}) holds. Scyther cannot express forward or backward secrecy,
+key evolution or unlinkability; those are shown with Tamarin only.
+\input{tables/tab_scyther.tex}
+
+\textbf{Explicit versus auto-generated claims.} The nonces $N_1$, $N_{1r}$ and $N_2$ are public freshness values: they are
+sent in clear in $MSG_1$, $MSG_{1r}$ and $MSG_2$, and no equation relies on their secrecy, since $SK$ (E4), $V_1$ (E3), $V_2$ (E5)
+and $V_3$ (E6) all take the key $K$ as input. Our verification therefore checks only the explicit claims of
+\cref{tab:scyther}. Scyther's \emph{Autoverify} (\texttt{--auto-claims}) replaces them by generated claims, including
+\texttt{Secret} for every fresh value; on the normal path it reports \ScyAutoNormalAutoOk\ claims Ok and
+\ScyAutoNormalAutoFail\ Fail, on the retry branch \ScyAutoRetryAutoOk\ Ok and \ScyAutoRetryAutoFail\ Fail
+(\cref{tab:scyther-auto}). Each failing \texttt{Secret} claim concerns a nonce or the field $V_{1r}$, which the protocol sends
+in clear, and its attack graph is an honest run in which the attacker only reads the messages; in the same models the explicit
+\texttt{Secret} and \texttt{SKR} claims on $SK$ hold although the attacker knows every nonce. The failing \texttt{Niagree} and
+\texttt{Nisynch} claims of the retry branch are the by-design failures discussed above. Tamarin's \texttt{ephemeral\_leak}
+lemma, in which the nonces are revealed, is verified (\cref{tab:tamarin}). Results were identical at 3, 4 and 5 runs.
+Panel (h) of \cref{fig:shots-scyther2} shows the Autoverify window of the normal path with its four failing \texttt{Secret}
+claims.
+\input{tables/tab_scyther_auto.tex}
+
+\textbf{Result windows.} \Cref{fig:shots-scyther} shows the Scyther windows for the comparison: BAKMM-IoD with v3's claim set,
+where only \texttt{Niagree} and \texttt{Nisynch} fail (F5, panel a), v3 with the same claims (panel b), and role
+characterisation, where both roles of both models are reachable (panels c, d). \Cref{fig:shots-scyther2} shows the retry branch
+with its by-design failures (panel e), the server--cloud phase with every claim verified (panel f), the published BAKMM-IoD
+listing, in which no role is reachable (panel g, F1), and the Autoverify window discussed above (panel h). Every verdict
+visible in these windows equals the corresponding entry of \cref{tab:scyther,tab:scyther-auto} and of
+\texttt{results/scyther/summary.json}.
+
+\begin{figure}[!htbp]
+\centering
+\shot{bakmm_verify}{(a) BAKMM-IoD, same claims as v3, Verify claims, 3 runs (12 Ok, 4 Fail).}{fig:shot-a6}\hfill
+\shot{fsl_v3_de_es_verify}{(b) FSL-AKE v3, Verify claims, 5 runs (16 Ok, proof of correctness).}{fig:shot-a2}\\[4pt]
+\shot{bakmm_same_claims_characterize}{(c) BAKMM-IoD, Characterize roles, 5 runs: both roles reachable, at least 10 trace patterns.}{fig:shot-a5}\hfill
+\shot{fsl_v3_de_es_characterize}{(d) FSL-AKE v3, Characterize roles, 5 runs: both roles reachable, exactly 1 trace pattern each.}{fig:shot-a1}
+\caption{Scyther result windows, normal path (scyther-gui, File $>$ Open, maximum number of runs as stated, other settings
+default). BAKMM-IoD is verified at 3 runs because its 5-run verification did not finish within \ScyBakmmFiveSecs\,s.}
+\label{fig:shots-scyther}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\shot{fsl_v3_de_es_retry_verify}{(e) FSL-AKE v3 retry branch, Verify claims, 5 runs: \texttt{Niagree}, \texttt{Nisynch} fail by design (12 Ok, 4 Fail).}{fig:shot-a3}\hfill
+\shot{fsl_v3_es_cs_verify}{(f) FSL-AKE v3 server--cloud phase, Verify claims, 5 runs (16 Ok, proof of correctness).}{fig:shot-a4}\\[4pt]
+\shot{bakmm_paper_listing_characterize}{(g) The BAKMM-IoD paper's own listing, Characterize roles, 5 runs: no role reachable (F1).}{fig:shot-a7}\hfill
+\shot{fsl_v3_de_es_autoverify}{(h) FSL-AKE v3, Autoverify (auto-generated claims): \texttt{Secret} $N_1$, $N_2$ fail because both
+are sent in clear; agreement claims Ok (8 Ok, 4 Fail, \cref{tab:scyther-auto}).}{fig:shot-auto}
+\caption{Scyther result windows, retry branch, server--cloud phase, published listing and auto-generated claims (settings as in
+\cref{fig:shots-scyther}).}
+\label{fig:shots-scyther2}
+\end{figure}
+
+\subsection{Informal analysis}\label{sec:informal}
+Each paragraph names the Tamarin lemma that backs it and its bound (\cref{tab:tamarin,tab:tamarin-extra}); the arguments
+themselves are informal.
+\textbf{Mutual authentication and key confirmation.} The drone accepts only a $V_2$ (E5) and the server only a $V_1$ (E3) or
+$V_{1r}$ (E3r), all of which need $K$; the server accepts $SK$ only with $V_3$ (E6). Backed by \texttt{inj\_agree\_drone},
+\texttt{inj\_agree\_server} and \texttt{key\_confirmation\_server} (one session per pair).
+\textbf{Session-key secrecy and known session key.} $SK$ (E4) needs $K$, which is never sent; each session has its own $K$.
+Backed by \texttt{secrecy\_SK} and \texttt{other\_session\_key\_leak} (one session per pair).
+\textbf{Forward secrecy} (compromise of any party's long-term or current state does not reveal session keys of sessions that
+completed before the compromise). $K$ and its record are erased at S5 and D3, $K' = H(\text{``k''}, K, SK)$ (E7) is one-way, and
+the ticket needs $R$ (E9) from the erased $K$ (\cref{fig:timeline}). Backed by \texttt{forward\_secrecy\_drone},
+\texttt{\_server} and \texttt{\_all} (one session per pair).
+\input{figures/fig7_timeline.tex}
+\textbf{Backward secrecy} (knowledge of a session key does not reveal any earlier session key). $SK_{i+1}$ needs $K_{i+1}$,
+which does not give $K_i$. Backed by \texttt{backward\_secrecy\_paper\_def}, two sessions per pair.
+\textbf{Ephemeral leak.} The nonces are public by design; $SK$ also needs $K$. Backed by \texttt{ephemeral\_leak} (one session
+per pair). Ephemeral values together with $K$ do give $SK$ (no Diffie--Hellman step).
+\textbf{Identity.} $TID'$ and $PID'$ come from E8, which includes $K$; the database holds them only as indices (E1). Backed by
+\texttt{tid\_agreement} and \texttt{tid\_secrecy} (one session per pair; the database may be read, but not together with
+$X_{ES}$).
+\textbf{Replay.} The record of $(TID, K)$ is deleted at commit, so a replayed $MSG_1$ finds no record; data records need a
+larger counter (E12). Backed by \texttt{no\_replay\_m1} (one session per pair) and \texttt{no\_replay\_data} (data-path theory,
+unbounded).
+\textbf{Untraceability.} A retry uses the keyed one-time $PID$; it is unlinkable when every candidate drone lost $MSG_2$, but
+not when the attacker drops $MSG_2$ for exactly one drone (\cref{sec:discussion}). Backed by observational equivalence in the
+fixed scenario of two drones and one retry (\texttt{fsl\_v3\_unlink} verified, \texttt{fsl\_v3\_unlink\_mixed} falsified).
+\textbf{No clock synchronisation.} No timestamps are used (a design property; no lemma).
+
+\subsection{Security comparison}\label{sec:comparison}
+\Cref{tab:checklist} compares BAKMM-IoD and v3 over the 38 checklist items under one rule: \emph{better} only if the BAKMM-IoD
+result is falsified and the v3 result verified for the same lemma text, attacker and bound, or, where the BAKMM-IoD Tamarin model
+did not terminate, for the identical Scyther claim set at 3 runs; a row with several lemmas takes the weakest of their
+comparisons. The only BAKMM-IoD verdict available for many items is the Scyther \texttt{Niagree}/\texttt{Nisynch} failure, and
+every attack graph of that failure is the F5 alteration of $M_5$; it does not show a man-in-the-middle, impersonation,
+parallel-session or verifier-table attack, and \texttt{Commit} on $SK$ holds. The \DomFiveOnly\ items that name such an attack,
+or session-key agreement or freshness (items 2, 3, 14--17, 28), are therefore not comparable; item~1 (mutual authentication) is
+equal because its key-confirmation lemma is equal. Under this rule v3 is better on \DomBetter\ item (untraceability, item~33),
+equal on \DomEqual, worse on \DomWorse, and not comparable on \DomNC. Most not-comparable rows have no BAKMM-IoD verdict because
+its Tamarin model did not terminate, or concern properties without a lemma; they are kept visible with the reason. Over the
+BAKMM-IoD rows including the findings F1--F11 (\cref{tab:flawrows}, Tamarin only) the counts are \DomAllBetter\ better,
+\DomAllEqual\ equal, \DomAllWorse\ worse and \DomAllNC\ not comparable. The rows O1--O7 compare the predecessor v2 with v3
+(\DomVtwoBetter\ better, \DomVtwoEqual\ equal, \DomVtwoWorse\ worse, \DomVtwoNC\ not comparable) and are not part of these counts.
+\input{tables/tab_checklist.tex}
+\input{tables/tab_flawrows.tex}

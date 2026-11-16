@@ -1,0 +1,82 @@
+\section{Security analysis of BAKMM-IoD}\label{sec:bakmm-analysis}
+
+\Cref{tab:flaws} summarises the findings. A finding is \emph{confirmed} when a tool finds the attack under the paper's own
+threat model, and \emph{conditional} when it needs a stated extra condition. Every evidence pack also contains a control
+model in which the same lemma or claim holds, so that a falsified result cannot come from a model that never runs.
+\input{tables/tab_flaws.tex}
+
+\subsection{F1: the published Scyther model never reaches its claims}\label{sec:f1}
+\textbf{Paper's claim.} Sec.~6 and Fig.~5 of the paper report that all claims hold.
+\textbf{Finding.} Running the published listing gives the reported \texttt{Ok} results, but Scyther's role
+characterisation shows that neither role can finish (\texttt{Reachable} claims fail). Every value is declared \texttt{const}
+inside each role, which Scyther treats as a fresh value per role, so no role passes its first receive and no claim is ever
+reached. The \texttt{Ok} results therefore say nothing about the protocol. With the long-term values shared, both roles become
+reachable (control).
+\textbf{Root cause.} The listing does not let the two roles share their long-term values.
+
+\subsection{F2: the printed session-key order differs between drone and server}\label{sec:f2}
+AKDDE2 and AKDDE3 (with Table~5 of the paper) print the session key with different field orders:
+\[ \text{AKDDE2: } SK = h(\dots\|T_1\|T_2\|RID_{DE}\|MS), \qquad \text{AKDDE3: } SK = h(\dots\|RID_{DE}\|T_1\|T_2\|MS). \]
+As printed, the two sides compute different keys and no session completes; Scyther rejects the printed model, and the model with
+one order is executable. \textbf{Root cause:} one value written twice with different field orders.
+
+\subsection{F3: the printed $m_1$ and $m_2$ of the server--cloud phase differ}\label{sec:f3}
+In AKDEC1--2, $m_1$ masks $h(TC_{ES}\|RS_1\|\dots)$ while $m_2$ is built on $h(RS_1\|TC_{ES}\|\dots)$, so the value the
+cloud server unmasks never matches $m_2$ and every message is rejected. \textbf{Root cause:} as in F2.
+
+\subsection{F4: no forward secrecy}\label{sec:f4}
+\textbf{Paper's claim.} Sec.~3.2 and Proposition~5 state that the scheme supports forward secrecy.
+\Cref{alg:f4} needs a recording of a finished session and, afterwards, the memory of the captured drone. Tamarin falsifies
+\texttt{forward\_secrecy} on the paper's model and verifies key secrecy in the control model.
+\textbf{Root cause.} Both key shares are XOR-masked only with $h(RID_{DE}\|MS\|T)$, which anyone holding the long-term values
+can recompute; nothing is erased.
+\begin{algorithm}[!htbp]
+\caption{F4: recovering the key of a recorded session after drone capture}\label{alg:f4}
+\KwIn{recorded $MSG_1=\{TID_{DE},M_1,M_2,T_1\}$, $MSG_2=\{M_3,M_4,M_5,T_2\}$; later, the captured drone's $RID_{DE}, MS$}
+\KwOut{$SK$ of the recorded session}
+$A \leftarrow M_1 \oplus h(RID_{DE}\|MS\|T_1)$\;
+$B \leftarrow M_3 \oplus h(RID_{DE}\|MS\|T_2)$\;
+$SK \leftarrow h(A\|B\|T_1\|T_2\|RID_{DE}\|MS)$\;
+\Return $SK$; all data of that session can be decrypted\;
+\end{algorithm}
+
+\subsection{F5: the new temporary identity can be replaced in transit}\label{sec:f5}
+\textbf{Paper's claim.} Proposition~2 and the paper's own \texttt{Niagree}/\texttt{Nisynch} claims.
+Both sides complete with the same key but different temporary identities (\cref{alg:f5}). In the F5 evidence pack's own
+Scyther model (\texttt{evidence/F5/model.spdl}), Scyther reports \texttt{Fail} for \texttt{Niagree}, \texttt{Nisynch} and
+\texttt{Commit} on $TID^{new}$ (claims DE4, DE5, DE10), with \texttt{Ok} in the control model; in the pack's own Tamarin model
+with real XOR (\texttt{evidence/F5/model.spthy}) \texttt{agreement\_on\_TIDnew} is falsified and \texttt{agreement\_on\_SK}
+verified. The shared-lemma BAKMM-IoD theory of \cref{tab:tamarin}, which is larger, did not terminate on \texttt{tid\_agreement};
+in the Scyther model with v3's claim set (\cref{tab:scyther}) all attack graphs on \texttt{Niagree}/\texttt{Nisynch} are this
+alteration. \textbf{Root cause.} $M_4 = h(SK\|T_1\|T_2\|RID_{DE})$ does not cover $M_5$.
+\begin{algorithm}[!htbp]
+\caption{F5: replacing $TID^{new}$}\label{alg:f5}
+\KwIn{control of the channel}
+intercept $MSG_2=\{M_3,M_4,M_5,T_2\}$\;
+replace $M_5$ by any value $M_5^{*}$; forward $\{M_3,M_4,M_5^{*},T_2\}$\;
+the drone checks $M_4$, which does not cover $M_5$, and stores $TID^{*} = M_5^{*}\oplus h(A\|RID_{DE}\|T_2)\neq TID^{new}$\;
+\end{algorithm}
+
+\subsection{F6: a captured drone accepts the attacker as its server}\label{sec:f6}
+With the drone's $RID_{DE}$ and $MS$, the attacker answers $MSG_1$ itself: it picks any $B^{*}$, sends
+$M_3 = h(RID_{DE}\|MS\|T_2)\oplus B^{*}$ and the matching $M_4$, and the drone accepts a key the attacker knows without any
+server. Tamarin falsifies \texttt{drone\_agrees\_with\_server}. \textbf{Root cause.} The drone does not check that the unmasked
+share contains $RID_{ES}$ or $TC_{ES}$; it does not store them. (FSL-AKE v3 keeps this limit, \cref{sec:discussion}.)
+
+\subsection{F7: a drone is traceable whenever a session does not complete}\label{sec:f7}
+$TID_{DE}$ travels in clear in $MSG_1$ and is replaced only after a valid $MSG_2$. An attacker who blocks $MSG_2$ sees the same
+$TID_{DE}$ in every new attempt and links them. Tamarin falsifies observational equivalence between ``same drone'' and
+``two drones''; Scyther cannot express the property. \textbf{Root cause.} No identifier changes between attempts.
+
+\subsection{Conditional findings F8--F11}\label{sec:f8}
+\textbf{F8} (condition: the attacker reads the server database, which Proposition~4 excludes while Sec.~1.2 names stolen
+verifiers as a risk): with $(RID_{DE}, MS)$ from the server table the attacker builds a valid $MSG_1$ and $M_6$, and the
+server accepts a session the drone never ran; Tamarin falsifies \texttt{server\_agrees\_with\_drone} in the pack's own model
+(\texttt{evidence/F8/model.spthy}), while the shared-lemma BAKMM-IoD theory did not terminate (\cref{tab:tamarin}). As in
+\cref{tab:flaws}, all results in this section come from the packs' own models.
+\textbf{F9} (condition: $T_2 = T_1$; the paper does not state the clock resolution): the mask of $M_5$ equals $M_2$, so a
+listener computes $TID^{new} = M_5\oplus M_2$; Tamarin falsifies \texttt{TIDnew\_secret}.
+\textbf{F10} (condition: $RID_{DE}$ leaks from an RA insider and one server key share $B$ leaks): $M_1$ and $M_3$ share the mask
+form $h(RID_{DE}\|MS\|T)$, so a recovered $M_3$ mask is a valid $M_1$ mask and the attacker learns the $TID^{new}$ the server
+issues; the session key is not broken; Tamarin falsifies \texttt{TIDnew\_secret}. \textbf{F11} (condition: data under the session key is plain encryption, the paper
+not describing a record format): a recorded data record is accepted twice; Tamarin falsifies \texttt{data\_taken\_in\_once}.

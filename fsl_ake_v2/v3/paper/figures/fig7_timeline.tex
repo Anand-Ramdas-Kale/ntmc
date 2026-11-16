@@ -1,0 +1,21 @@
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\scriptsize, st/.style={draw, rounded corners=2pt, align=center, minimum width=2.4cm, minimum height=0.9cm, fill=lightgrey}]
+  \node[st] (s0) at (0,0) {$K_i, TID_i, PID_i$};
+  \node[st] (s1) at (5.6,0) {$K_{i+1}, TID_{i+1}, PID_{i+1}$};
+  \node[st] (s2) at (11.2,0) {$K_{i+2}, \dots$};
+  \draw[msg] (s0) -- node[above, font=\scriptsize] {session $i$: $SK_i$ (E4)} (s1);
+  \draw[msg] (s1) -- node[above, font=\scriptsize] {session $i+1$} (s2);
+  \node[font=\scriptsize, below=0.15cm of s0, text=warn] {erased at D3 / S5};
+  \node[font=\scriptsize, below=0.15cm of s1, text=warn] {erased at next D3 / S5};
+  \draw[-{Stealth}, black!60] (2.3,-1.3) -- node[below, font=\scriptsize, align=center] {$K_{i+1} = H(\text{``k''}, K_i, SK_i)$ (E7):\\ one-way, so $K_{i+1}$ does not give $K_i$} (7.9,-1.3);
+  \node[font=\scriptsize, align=left, text width=13.6cm, anchor=north west] at (-1.2,-2.4) {%
+    \textbf{Forward secrecy:} after session $i$ ends, $K_i$, $SK_i$ and the record over $K_i$ are erased at both parties; a
+    later compromise yields only $K_{i+1}$ (and a ticket under the erased $R$), from which $SK_i$ cannot be computed.\\
+    \textbf{Backward secrecy} (knowledge of a session key does not reveal any earlier session key): $SK_{i+1}$ needs $K_{i+1}$,
+    and $K_{i+1}$ does not give $K_i$, hence not $SK_i$.\\
+    \textbf{Not achieved (O1):} knowing $K_i$ \emph{before} session $i$ gives $K_{i+1}$, because every other input of E7 is public.};
+\end{tikzpicture}
+\caption{Key evolution and erasure in FSL-AKE v3 and why forward and backward secrecy hold (Tamarin, bounded; the argument in the figure is informal; \cref{sec:security}).}
+\label{fig:timeline}
+\end{figure}
