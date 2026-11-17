@@ -16,7 +16,7 @@ reachable (control).
 
 \subsection{F2: the printed session-key order differs between drone and server}\label{sec:f2}
 AKDDE2 and AKDDE3 (with Table~5 of the paper) print the session key with different field orders:
-\[ \text{AKDDE2: } SK = h(\dots\|T_1\|T_2\|RID_{DE}\|MS), \qquad \text{AKDDE3: } SK = h(\dots\|RID_{DE}\|T_1\|T_2\|MS). \]
+\begin{gather*} \text{AKDDE2: } SK = h(\dots\|T_1\|T_2\|RID_{DE}\|MS), \\ \text{AKDDE3: } SK = h(\dots\|RID_{DE}\|T_1\|T_2\|MS). \end{gather*}
 As printed, the two sides compute different keys and no session completes; Scyther rejects the printed model, and the model with
 one order is executable. \textbf{Root cause:} one value written twice with different field orders.
 

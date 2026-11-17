@@ -1,11 +1,13 @@
-\documentclass[preprint,11pt,authoryear]{elsarticle}
-\usepackage[T1]{fontenc}
-\usepackage{amsmath,amssymb}
-\usepackage{graphicx}
-\usepackage{booktabs}
+% Elsevier CAS layout (Journal of Systems Architecture). Class files cas-dc.cls, cas-sc.cls and cas-common.sty are the
+% CAS bundle v2.4 (copied from els-cas-templates/). Single-column switch: change cas-dc to cas-sc on the next line.
+\def\casclass{cas-dc} % \def\casclass{cas-sc}
+\documentclass[a4paper,fleqn]{\casclass}
+% If the frontmatter runs over more than one page: \documentclass[a4paper,fleqn,longmktitle]{\casclass}
+
+% The class already loads graphicx, amsmath/amssymb, booktabs, xcolor, hyperref (colorlinks) and geometry.
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{longtable}
 \usepackage[section]{placeins}
-\usepackage{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,calc}
 \usepackage{pgfplots}
@@ -13,14 +15,17 @@
 \usepgfplotslibrary{groupplots}
 \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
 \usepackage{siunitx}
-\usepackage[hidelinks]{hyperref}
 \usepackage[capitalise]{cleveref}
-\usepackage[margin=2.3cm]{geometry}
 
 \makeatletter
 \setlength{\@fptop}{0pt}    % Removes empty space above the top float on a float page
 \setlength{\@fpsep}{4pt}    % Sets exact spacing between floats on a float page
-% \setlength{\@fpbot}{0pt plus 1fil} % Pushes all remaining whitespace to the bottom
+\setlength{\@dblfptop}{0pt}
+\setlength{\@dblfpsep}{4pt}
+% Two-column layout: let long identifiers such as \texttt{forward\_secrecy} break after an underscore (text mode only;
+% the character printed is unchanged), and allow a little extra interword stretch before a line overflows.
+\DeclareRobustCommand{\_}{\ifmmode\nfss@text{\textunderscore}\else\textunderscore\allowbreak\fi}
+\setlength{\emergencystretch}{1.5em}
 \makeatother
 
 \newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
@@ -31,28 +36,51 @@
   \IfFileExists{screenshots/#1.png}{\includegraphics[width=\linewidth]{screenshots/#1.png}}%
   {\fbox{\parbox[c][3.2cm][c]{0.9\linewidth}{\centering\footnotesize Screenshot pending:\\[2pt] {\tiny\texttt{\detokenize{#1.png}}}}}}\\[2pt]
   {\footnotesize #2}\label{#3}\end{minipage}}
+% cas-common.sty prints an empty "ORCID(s):" footnote when no author has an ORCID; print it only when one is given.
+\NewCommandCopy{\casprintorcid}{\printorcid}
+\ExplSyntaxOn
+\RenewDocumentCommand \printorcid { } { \seq_if_empty:NF \g_stm_orcid_seq { \casprintorcid } }
+\ExplSyntaxOff
 \crefname{algocf}{Algorithm}{Algorithms}
 \Crefname{algocf}{Algorithm}{Algorithms}
 
 \renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}
 \renewcommand{\floatpagefraction}{0.6}
-\setcounter{totalnumber}{4}\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}
+\renewcommand{\dbltopfraction}{0.9}\renewcommand{\dblfloatpagefraction}{0.6}
+\setcounter{totalnumber}{4}\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}\setcounter{dbltopnumber}{3}
 \input{tables/numbers.tex}
 \input{figures/styles.tex}
 
-% No journal footer: the paper is not submitted anywhere. Page 1 shows only the page number, like the other pages.
-\makeatletter
-\def\ps@pprintTitle{\let\@oddhead\@empty\let\@evenhead\@empty
-  \def\@oddfoot{\reset@font\hfil\thepage\hfil}\let\@evenfoot\@oddfoot}
-\makeatother
-
 \begin{document}
-\begin{frontmatter}
-\title{An improved authentication and key agreement scheme for the Internet of Drones, lightweight on the drone side, with forward and backward secrecy verified under a session bound}
-\author[vnit]{Ankita Bagal}
-\author[vnit]{Anand Ramdas Kale}
-\affiliation[vnit]{organization={Department of Computer Science and Engineering, Visvesvaraya National Institute of Technology (VNIT)},
-  city={Nagpur}, postcode={440010}, state={Maharashtra}, country={India}}
+\let\WriteBookmarks\relax
+
+% STUB (to fill in): short title for the running head, e.g. \shorttitle{...}
+\shorttitle{}
+\shortauthors{A. Bagal and A.R. Kale}
+
+\title[mode=title]{An improved authentication and key agreement scheme for the Internet of Drones, lightweight on the drone side, with forward and backward secrecy verified under a session bound}
+
+\author[1]{Ankita Bagal}
+% STUBS (to fill in, not invented): \cormark[1], \ead{<e-mail>}, ORCID as \author[1]{Ankita Bagal}[orcid=0000-0000-0000-0000],
+% \credit{<CRediT roles>}
+%\cormark[1]
+%\ead{}
+%\credit{}
+
+\author[1]{Anand Ramdas Kale}
+% STUBS (to fill in): \ead{<e-mail>}, ORCID, \credit{<CRediT roles>}
+%\ead{}
+%\credit{}
+
+\affiliation[1]{organization={Department of Computer Science and Engineering, Visvesvaraya National Institute of Technology (VNIT)},
+  city={Nagpur},
+  postcode={440010},
+  state={Maharashtra},
+  country={India}}
+
+% STUB (to fill in): corresponding author text, used with \cormark[1] above
+%\cortext[1]{Corresponding author}
+
 \begin{abstract}
 In the Internet of Drones, every drone--ground-station session needs mutual authentication and a fresh key. BAKMM-IoD
 (Wazid et al., 2025) claims these properties together with forward secrecy, untraceability and resistance to drone capture,
@@ -72,10 +100,23 @@ proof supports key indistinguishability. With the BAKMM-IoD paper's primitive ti
 from a desktop-measured AES-GCM/SHA-256 ratio (estimate \CostServerWithAEAD\ versus \CostServerBakmm\,ms).
 \end{abstract}
 
-\begin{keyword}
+% STUB (to fill in): JSA asks for 3-5 highlights of at most 85 characters each.
+%\begin{highlights}
+%\item
+%\item
+%\item
+%\end{highlights}
+
+% STUB (optional): graphical abstract
+%\begin{graphicalabstract}
+%\includegraphics{}
+%\end{graphicalabstract}
+
+\begin{keywords}
 Internet of Drones \sep authenticated key agreement \sep forward secrecy \sep formal verification \sep Tamarin \sep Scyther
-\end{keyword}
-\end{frontmatter}
+\end{keywords}
+
+\maketitle
 
 \input{sections/01_introduction}
 \input{sections/02_related_work.tex}
@@ -95,7 +136,12 @@ project repository: specification \texttt{spec/fsl\_ake\_v3.md}, Tamarin theorie
 \texttt{scripts/run\_evidence.sh} to reproduce them. The tables of this paper are generated by
 \texttt{paper/scripts/make\_tables.py}.
 
+% STUB (to fill in): CRediT statement, printed from the \credit{} entries above
+%\printcredits
+
 \FloatBarrier
-\bibliographystyle{elsarticle-harv}
+% Numbered references [1]. The CAS documentation names model1-num-names.bst (download from stmdocs); it is not in the
+% CAS bundle. elsarticle-num-names.bst is Elsevier's equivalent numbered style and is included here.
+\bibliographystyle{elsarticle-num-names}
 \bibliography{refs}
 \end{document}

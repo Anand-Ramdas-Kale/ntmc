@@ -20,10 +20,10 @@ session's $K$ was erased. Condition (2) excludes F6, condition (3) excludes F8 w
 before a session excludes post-compromise security.
 
 \textbf{Theorem.} With $q = q_s + q_e$ \textsf{Send} and \textsf{Execute} queries and $q_h$ oracle queries,
-\begin{equation*}
-\mathrm{Adv} \le \frac{q_h^2}{2^{256}} + \frac{9q^2}{2^{160}} + \frac{q^2}{2^{96}} + \frac{q_s}{2^{255}} + \frac{q_h}{2^{126}}
+\begin{multline*}
+\mathrm{Adv} \le \frac{q_h^2}{2^{256}} + \frac{9q^2}{2^{160}} + \frac{q^2}{2^{96}} + \frac{q_s}{2^{255}} \\ + \frac{q_h}{2^{126}}
  + \frac{q_h(q+1)}{2^{255}} + 4(q+1)\,\mathrm{Adv}^{ae}.
-\end{equation*}
+\end{multline*}
 
 \textbf{Game sequence.} \\
 G0 is the real attack. \\
@@ -97,7 +97,7 @@ listing, in which no role is reachable (panel g, F1), and the Autoverify window 
 visible in these windows equals the corresponding entry of \cref{tab:scyther,tab:scyther-auto} and of
 \texttt{results/scyther/summary.json}.
 
-\begin{figure}[!htbp]
+\begin{figure*}[!t]
 \centering
 \shot{bakmm_verify}{(a) BAKMM-IoD, same claims as v3, Verify claims, 3 runs (12 Ok, 4 Fail).}{fig:shot-a6}\hfill
 \shot{fsl_v3_de_es_verify}{(b) FSL-AKE v3, Verify claims, 5 runs (16 Ok, proof of correctness).}{fig:shot-a2}\\[4pt]
@@ -106,9 +106,9 @@ visible in these windows equals the corresponding entry of \cref{tab:scyther,tab
 \caption{Scyther result windows, normal path (scyther-gui, File $>$ Open, maximum number of runs as stated, other settings
 default). BAKMM-IoD is verified at 3 runs because its 5-run verification did not finish within \ScyBakmmFiveSecs\,s.}
 \label{fig:shots-scyther}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[!htbp]
+\begin{figure*}[!t]
 \centering
 \shot{fsl_v3_de_es_retry_verify}{(e) FSL-AKE v3 retry branch, Verify claims, 5 runs: \texttt{Niagree}, \texttt{Nisynch} fail by design (12 Ok, 4 Fail).}{fig:shot-a3}\hfill
 \shot{fsl_v3_es_cs_verify}{(f) FSL-AKE v3 server--cloud phase, Verify claims, 5 runs (16 Ok, proof of correctness).}{fig:shot-a4}\\[4pt]
@@ -118,7 +118,7 @@ are sent in clear; agreement claims Ok (8 Ok, 4 Fail, \cref{tab:scyther-auto}).}
 \caption{Scyther result windows, retry branch, server--cloud phase, published listing and auto-generated claims (settings as in
 \cref{fig:shots-scyther}).}
 \label{fig:shots-scyther2}
-\end{figure}
+\end{figure*}
 
 \subsection{Informal analysis}\label{sec:informal}
 Each paragraph names the Tamarin lemma that backs it and its bound (\cref{tab:tamarin,tab:tamarin-extra}); the arguments

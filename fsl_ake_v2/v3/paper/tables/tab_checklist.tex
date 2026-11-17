@@ -1,17 +1,13 @@
-{\scriptsize\setlength{\tabcolsep}{2.5pt}\setlength{\LTcapwidth}{\textwidth}
-\begin{longtable}{rp{3.0cm}p{4.3cm}p{2.5cm}p{2.0cm}l}
-\caption{Security comparison over the 38 checklist items. A row is \emph{better} only if the BAKMM-IoD result is falsified and the v3 result verified under the same lemma text, reveal rules and bound, or, where the BAKMM-IoD Tamarin model did not terminate, for the identical Scyther claim set at 3 runs (Scy); \emph{equal} if both agree (shared limits included); \emph{not comparable} otherwise, e.g.\ when the BAKMM-IoD model did not terminate (DNT). A row with several lemmas takes the weakest of their comparisons. In every (Scy) row the BAKMM-IoD failure is the F5 alteration of $M_5$ (all 60 attack graphs at 3 runs, in \texttt{results/scyther/attacks/}); rows whose item names another attack (2, 3, 14--17, 28) are therefore not comparable, the reason being in \texttt{results/dominance.md}.}\label{tab:checklist}\\
+\begin{table*}[!t]
+\centering
+\footnotesize
+\caption{Security comparison over the 38 checklist items. A row is \emph{better} only if the BAKMM-IoD result is falsified and the v3 result verified under the same lemma text, reveal rules and bound, or, where the BAKMM-IoD Tamarin model did not terminate, for the identical Scyther claim set at 3 runs (Scy); \emph{equal} if both agree (shared limits included); \emph{not comparable} otherwise, e.g.\ when the BAKMM-IoD model did not terminate (DNT). A row with several lemmas takes the weakest of their comparisons. In every (Scy) row the BAKMM-IoD failure is the F5 alteration of $M_5$ (all 60 attack graphs at 3 runs, in \texttt{results/scyther/attacks/}); rows whose item names another attack (2, 3, 14--17, 28) are therefore not comparable, the reason being in \texttt{results/dominance.md}.}
+\label{tab:checklist}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{rp{3.0cm}p{4.3cm}p{2.5cm}p{2.0cm}l}
 \toprule
 \# & Item & Lemma(s) & BAKMM-IoD & v3 & Comparison \\
 \midrule
-\endfirsthead
-\multicolumn{6}{l}{\Cref{tab:checklist} (continued)}\\
-\toprule
-\# & Item & Lemma(s) & BAKMM-IoD & v3 & Comparison \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
 1 & Mutual authentication & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone}, \texttt{inj\_\allowbreak{}agree\_\allowbreak{}server}, \texttt{key\_\allowbreak{}confirmation\_\allowbreak{}server} & attack (Scy, 3 runs); attack (Scy, 3 runs); no attack within 3 runs (Scy) & proof of correctness (Scy); proof of correctness (Scy); proof of correctness (Scy) & \textbf{equal} \\
 2 & Session key agreement & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone} & attack (Scy, 3 runs) & proof of correctness (Scy) & \textbf{not comparable} \\
 3 & Key freshness & \texttt{inj\_\allowbreak{}agree\_\allowbreak{}drone} & attack (Scy, 3 runs) & proof of correctness (Scy) & \textbf{not comparable} \\
@@ -32,6 +28,19 @@
 18 & Message injection & \texttt{tid\_\allowbreak{}agreement}, \texttt{data\_\allowbreak{}integrity} & DNT; verified & verified; verified & \textbf{not comparable} \\
 19 & Denial-of-service (DoS) attack & not analysed by a tool & -- & -- & \textbf{not comparable} \\
 20 & Eavesdropping for a long time & \texttt{secrecy\_\allowbreak{}SK} & no attack within 3 runs (Scy) & proof of correctness (Scy) & \textbf{equal} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[!t]
+\centering
+\footnotesize
+\Cref{tab:checklist} (continued)\par\smallskip
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{rp{3.0cm}p{4.3cm}p{2.5cm}p{2.0cm}l}
+\toprule
+\# & Item & Lemma(s) & BAKMM-IoD & v3 & Comparison \\
+\midrule
 21 & Resistance to known attacks & umbrella item & -- & -- & \textbf{not comparable} \\
 22 & Privileged insider attack & \texttt{drone\_\allowbreak{}impersonation\_\allowbreak{}with\_\allowbreak{}db\_\allowbreak{}and\_\allowbreak{}X} & DNT & falsified & \textbf{not comparable} \\
 23 & Lost / stolen device (smart card loss) attack & \texttt{forward\_\allowbreak{}secrecy\_\allowbreak{}drone}, \texttt{captured\_\allowbreak{}drone\_\allowbreak{}accepts\_\allowbreak{}false\_\allowbreak{}server} & DNT; DNT & verified; falsified & \textbf{not comparable} \\
@@ -50,4 +59,6 @@
 36 & Dynamic device / drone addition & registration phase; no lemma & -- & -- & \textbf{not comparable} \\
 37 & Blockchain implementation & blockchain out of scope & -- & -- & \textbf{not comparable} \\
 38 & Formal security verification & BAKMM-IoD: paper's Scyther model reaches no claim (F1); v3: Scyther roles reachable, Tamarin lemmas (see F1 row) & -- & -- & \textbf{not comparable} \\
-\end{longtable}}
+\bottomrule
+\end{tabular}
+\end{table*}

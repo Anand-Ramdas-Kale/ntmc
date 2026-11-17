@@ -1,17 +1,13 @@
-{\scriptsize\setlength{\tabcolsep}{3pt}\setlength{\LTcapwidth}{\textwidth}
-\begin{longtable}{llp{2.6cm}lp{2.6cm}p{5.6cm}}
-\caption{Scyther's auto-generated claims (GUI \emph{Autoverify}, CLI \texttt{--auto-claims}) on the v3 models, 5 runs; identical at 3 and 4 runs. They replace the explicit claims of \cref{tab:scyther}; the normal-path window is panel (h) of \cref{fig:shots-scyther2}. Every failing \texttt{Secret} claim concerns a value that the protocol sends in clear; the attack graphs (\texttt{results/scyther/autoclaims/}) are honest runs observed by a passive attacker. \texttt{V1rx} is the name, in \texttt{scyther/fsl\_v3\_de\_es\_retry.spdl}, of the server's variable that receives the field $V_{1r}$ of $MSG_{1r}$.}\label{tab:scyther-auto}\\
+\begin{table*}[!t]
+\centering
+\footnotesize
+\caption{Scyther's auto-generated claims (GUI \emph{Autoverify}, CLI \texttt{--auto-claims}) on the v3 models, 5 runs; identical at 3 and 4 runs. They replace the explicit claims of \cref{tab:scyther}; the normal-path window is panel (h) of \cref{fig:shots-scyther2}. Every failing \texttt{Secret} claim concerns a value that the protocol sends in clear; the attack graphs (\texttt{results/scyther/autoclaims/}) are honest runs observed by a passive attacker. \texttt{V1rx} is the name, in \texttt{scyther/fsl\_v3\_de\_es\_retry.spdl}, of the server's variable that receives the field $V_{1r}$ of $MSG_{1r}$.}
+\label{tab:scyther-auto}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llp{2.6cm}lp{2.6cm}p{5.6cm}}
 \toprule
 Branch & Role & Auto-claim & Verdict & Scyther note & Explanation \\
 \midrule
-\endfirsthead
-\multicolumn{6}{l}{\Cref{tab:scyther-auto} (continued)}\\
-\toprule
-Branch & Role & Auto-claim & Verdict & Scyther note & Explanation \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
 normal & DE & Secret N1 & Fail & at least 1 attack & public by design: in clear in $MSG_1$; honest run, passive attacker \\
 normal & DE & Secret N2 & Fail & at least 1 attack & public by design: in clear in $MSG_2$; honest run, passive attacker \\
 normal & DE & Alive & Ok & proof of correctness &  \\
@@ -39,4 +35,6 @@ retry & ES & Alive & Ok & no attack within bounds &  \\
 retry & ES & Weakagree & Ok & no attack within bounds &  \\
 retry & ES & Niagree & Fail & at least 1 attack & by design: server cannot check $MSG_{1r}$ after erasing $K$ \\
 retry & ES & Nisynch & Fail & at least 1 attack & by design: server cannot check $MSG_{1r}$ after erasing $K$ \\
-\end{longtable}}
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,15 +1,15 @@
 % GENERATED from spec/fsl_ake_v3.md section 4 by paper/scripts/make_tables.py -- equations identical to the spec
-\begin{equation*}\tag{E0}\label{eq:E0} X_{idx} = H(\text{``x-idx''}, X_{ES})[0..127]\;\text{,}\;X_{db} = H(\text{``x-db''}, X_{ES})[0..127] \end{equation*}
+\begin{multline*}\tag{E0}\label{eq:E0} X_{idx} = H(\text{``x-idx''}, X_{ES})[0..127]\;\text{,} \\ X_{db} = H(\text{``x-db''}, X_{ES})[0..127] \end{multline*}
 \noindent{\footnotesize computed by: ES, once per boot}\par
-\begin{equation*}\tag{E1}\label{eq:E1} I(id) = \mathrm{PRP}_{X_{idx}}(id)\;\text{; being a permutation, ES reads}\;id\;\text{back as}\;\mathrm{PRP}^{-1}_{X_{idx}}(I(id)) \end{equation*}
+\begin{multline*}\tag{E1}\label{eq:E1} I(id) = \mathrm{PRP}_{X_{idx}}(id) \\ \text{; being a permutation, ES reads}\;id\;\text{back as}\;\mathrm{PRP}^{-1}_{X_{idx}}(I(id)) \end{multline*}
 \noindent{\footnotesize computed by: ES}\par
-\begin{equation*}\tag{E2}\label{eq:E2} C = \mathrm{AEAD}_{X_{db}}(\nu ; K; \text{``rec''}  \|  dev)\;\text{,}\;\nu \;\text{random, stored as}\;(\nu , C) \end{equation*}
+\begin{multline*}\tag{E2}\label{eq:E2} C = \mathrm{AEAD}_{X_{db}}(\nu ; K; \text{``rec''}  \|  dev)\;\text{,} \\ \nu \;\text{random, stored as}\;(\nu , C) \end{multline*}
 \noindent{\footnotesize computed by: ES}\par
 \begin{equation*}\tag{E3}\label{eq:E3} V_1 = H(\text{``v1''}, K, TID, N_1) \end{equation*}
 \noindent{\footnotesize computed by: DE sends, ES checks}\par
 \begin{equation*}\tag{E3r}\label{eq:E3r} V_{1r} = H(\text{``v1r''}, K, PID, N_{1r}) \end{equation*}
 \noindent{\footnotesize computed by: DE sends, ES checks}\par
-\begin{equation*}\tag{E4}\label{eq:E4} SK = H(\text{``sk''}, K, TID, n, N_2)\;\text{,}\;n\;\text{=}\;N_1\;\text{(first attempt) or}\;N_{1r}\;\text{(retry)} \end{equation*}
+\begin{multline*}\tag{E4}\label{eq:E4} SK = H(\text{``sk''}, K, TID, n, N_2)\;\text{,} \\ n\;\text{=}\;N_1\;\text{(first attempt) or}\;N_{1r}\;\text{(retry)} \end{multline*}
 \noindent{\footnotesize computed by: DE and ES}\par
 \begin{equation*}\tag{E5}\label{eq:E5} V_2 = H(\text{``v2''}, K, TID, n, N_2) \end{equation*}
 \noindent{\footnotesize computed by: ES sends, DE checks}\par
@@ -17,7 +17,7 @@
 \noindent{\footnotesize computed by: DE sends, ES checks}\par
 \begin{equation*}\tag{E7}\label{eq:E7} K' = H(\text{``k''}, K, SK) \end{equation*}
 \noindent{\footnotesize computed by: DE and ES}\par
-\begin{equation*}\tag{E8}\label{eq:E8} W = H(\text{``id''}, K, TID, SK)\;\text{;}\;TID' = W[0..159]\;\text{,}\;PID' = W[160..255] \end{equation*}
+\begin{multline*}\tag{E8}\label{eq:E8} W = H(\text{``id''}, K, TID, SK)\;\text{;} \\ TID' = W[0..159]\;\text{,} \\ PID' = W[160..255] \end{multline*}
 \noindent{\footnotesize computed by: DE and ES}\par
 \begin{equation*}\tag{E9}\label{eq:E9} R = H(\text{``r''}, K, TID, n)[0..127] \end{equation*}
 \noindent{\footnotesize computed by: ES on every commit; DE only on a retry}\par

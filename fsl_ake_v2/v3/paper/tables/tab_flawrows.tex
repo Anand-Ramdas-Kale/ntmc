@@ -1,17 +1,13 @@
-{\scriptsize\setlength{\tabcolsep}{3pt}\setlength{\LTcapwidth}{\textwidth}
-\begin{longtable}{llp{3.0cm}p{2.1cm}p{1.7cm}lp{3.6cm}}
-\caption{Flaw rows under the same dominance rule, Tamarin only (the Scyther models have no database, memory or state reveal). F1--F11: BAKMM-IoD shared-lemma theories versus v3. O1--O7 are findings on the predecessor v2 and compare the v2 theories (\cref{tab:tamarin}, column v2) with v3; they are counted separately.}\label{tab:flawrows}\\
+\begin{table*}[!t]
+\centering
+\footnotesize
+\caption{Flaw rows under the same dominance rule, Tamarin only (the Scyther models have no database, memory or state reveal). F1--F11: BAKMM-IoD shared-lemma theories versus v3. O1--O7 are findings on the predecessor v2 and compare the v2 theories (\cref{tab:tamarin}, column v2) with v3; they are counted separately.}
+\label{tab:flawrows}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llp{3.0cm}p{2.1cm}p{1.7cm}lp{3.6cm}}
 \toprule
 Row & Baseline & Lemma(s) & Baseline result & v3 & Comparison & Note \\
 \midrule
-\endfirsthead
-\multicolumn{7}{l}{\Cref{tab:flawrows} (continued)}\\
-\toprule
-Row & Baseline & Lemma(s) & Baseline result & v3 & Comparison & Note \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
 F1 & BAKMM-IoD & -- & -- & -- & \textbf{not comparable} & Scyther role reachability: paper listing unreachable (../../evidence/F1) vs v3 reachable; Reachable claims, not a shared lemma \\
 F2 & BAKMM-IoD & -- & -- & -- & \textbf{not comparable} & printed SK order: ../../evidence/F2 (own model) vs v3 executability; the shared baseline uses the corrected order \\
 F3 & BAKMM-IoD & -- & -- & -- & \textbf{not comparable} & printed m1/m2 in the server-cloud phase: ../../evidence/F3 (own model) vs v3 fsl\_v3\_es\_cs\_b1 executability \\
@@ -30,4 +26,6 @@ O4 & v2 & \texttt{key\_\allowbreak{}confirmation\_\allowbreak{}server} & falsifi
 O5 & v2 & -- & -- & -- & \textbf{not comparable} & v2 implementation logged SK; not a protocol property of either \\
 O6 & v2 & -- & -- & -- & \textbf{not comparable} & clock synchronisation: design difference, no lemma \\
 O7 & v2 & -- & -- & -- & \textbf{not comparable} & flooding / timing: not analysed by a tool \\
-\end{longtable}}
+\bottomrule
+\end{tabular}
+\end{table*}
