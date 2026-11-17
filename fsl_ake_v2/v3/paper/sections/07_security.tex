@@ -25,14 +25,17 @@ before a session excludes post-compromise security.
  + \frac{q_h(q+1)}{2^{255}} + 4(q+1)\,\mathrm{Adv}^{ae}.
 \end{equation*}
 
-\textbf{Game sequence.} G0 is the real attack. G1 simulates the random oracles by tables (no change). G2 aborts on collisions
-of oracle outputs, of the up to three nonces per session, and of the 96-bit pseudonyms (the last affects only availability).
+\textbf{Game sequence.} \\
+G0 is the real attack. \\
+G1 simulates the random oracles by tables (no change). \\
+G2 aborts on collisions of oracle outputs, of the up to three nonces per session, and of the 96-bit pseudonyms (the last affects only availability). \\
 G3 aborts if the adversary queries an oracle input containing the key $K$ of a fresh session, or $X_{ES}$ without corrupting
-it; by induction over the key chain each $K$ is uniform to the adversary until it is erased. G4 replaces every stored record
-$C$ and ticket $T$ by encryptions of zeros (A2). G5 aborts on accepted check values or tickets the partner did not produce;
-after G5 every accepting server has a matching accepting drone (key confirmation). In G6 the tested
-$SK = H(\text{``sk''}, K, TID, n, N_2)$ has an unqueried input used by no other session, and no public value is a function of
-$SK$, so the Test answer is independent of the adversary's view. Doubling the sum of the differences gives the bound: G2
+it; by induction over the key chain each $K$ is uniform to the adversary until it is erased. \\
+G4 replaces every stored record $C$ and ticket $T$ by encryptions of zeros (A2). \\
+G5 aborts on accepted check values or tickets the partner did not produce; after G5 every accepting server has a matching accepting drone (key confirmation). \\
+In G6 the tested $SK = H(\text{``sk''}, K, TID, n, N_2)$ has an unqueried input used by no other session, and no public value is a function of
+$SK$, so the Test answer is independent of the adversary's view. \\ 
+Doubling the sum of the differences gives the bound: G2
 gives the first three terms (oracle-output, nonce and pseudonym collisions), G3 the terms $q_h(q+1)/2^{255}$ (guessing a
 chain key) and $q_h/2^{126}$ (guessing the 128-bit $X_{ES}$ in either of its two oracle inputs), G5 the term $q_s/2^{255}$
 (forging a check value), and G4 and G5 one $(q+1)\mathrm{Adv}^{ae}$ each (hiding and forging records and tickets).
