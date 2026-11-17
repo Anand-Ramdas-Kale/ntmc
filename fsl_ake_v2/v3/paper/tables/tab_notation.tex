@@ -6,24 +6,24 @@
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{p{2.4cm}rp{6.4cm}p{3.6cm}}
 \toprule
-Symbol & Bits & Meaning & Held by \\
+Symbol & Bits & Meaning  \\
 \midrule
-$DE, ES, CS, RA$ & - & drone, ground-station server, cloud server, registration authority &  \\
-$dev$ & 64 & device number, unique per server & ES \\
-$TID$ & 160 & current temporary identity of the drone & DE; ES only as PRP index \\
-$PID$ & 96 & current one-time retry pseudonym & DE; ES only as PRP index \\
-$K$ & 256 & current key shared by DE and ES & DE; ES only encrypted under X\_db \\
-$X_{ES}$ & 128 & server master secret, in a secure element & ES \\
-$X_{idx}, X_{db}$ & 128 each & index and record keys derived from X\_ES at boot (E0) & ES (secure element) \\
-$N_1, N_{1r}, N_2$ & 160 each & random nonces (first attempt, retry, server) & sender; public on the wire \\
-$V_1, V_{1r}, V_2, V_3$ & 256 each & check values & public on the wire \\
-$SK$ & 256 & session key & DE and ES, in volatile memory only, during the session \\
-$KD$ & 128 & data key SK[0..127] & as SK \\
-$R$ & 128 & one-time retry key & ES while committing (then erased); DE only when it needs it \\
-$T$ & 288 & retry ticket: N2 encrypted under R & ES database \\
-$\nu $ & 96 & AEAD nonce of a stored record & ES database \\
-$ctr$ & 64 & data-record counter & sender and receiver \\
-$dir$ & 32 & direction label of a data record & constant \\
+$DE, ES, CS, RA$ & - & drone, ground-station server, cloud server, registration authority   \\
+$dev$ & 64 & device number, unique per server \\
+$TID$ & 160 & current temporary identity of the drone \\
+$PID$ & 96 & current one-time retry pseudonym \\
+$K$ & 256 & current key shared by DE and ES  \\
+$X_{ES}$ & 128 & server master secret, in a secure element \\
+$X_{idx}, X_{db}$ & 128 each & index and record keys derived from X\_ES at boot (E0) \\
+$N_1, N_{1r}, N_2$ & 160 each & random nonces (first attempt, retry, server) \\
+$V_1, V_{1r}, V_2, V_3$ & 256 each & check values \\
+$SK$ & 256 & session key \\
+$KD$ & 128 & data key SK[0..127]  \\
+$R$ & 128 & one-time retry key \\
+$T$ & 288 & retry ticket: N2 encrypted under R \\
+$\nu $ & 96 & AEAD nonce of a stored record  \\
+$ctr$ & 64 & data-record counter  \\
+$dir$ & 32 & direction label of a data record  \\
 \bottomrule
 \end{tabular}
 \end{table*}

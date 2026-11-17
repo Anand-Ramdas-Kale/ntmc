@@ -17,6 +17,12 @@
 \usepackage[capitalise]{cleveref}
 \usepackage[margin=2.3cm]{geometry}
 
+\makeatletter
+\setlength{\@fptop}{0pt}    % Removes empty space above the top float on a float page
+\setlength{\@fpsep}{4pt}    % Sets exact spacing between floats on a float page
+% \setlength{\@fpbot}{0pt plus 1fil} % Pushes all remaining whitespace to the bottom
+\makeatother
+
 \newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 % Screenshot placeholder: \shot{file name without .png}{caption}{label}
